@@ -52,5 +52,6 @@ It's also convenient to use the lib with sklearn ( e.g. for taking metrics from 
 
 ```
 pandas
+numpy
 python 3.7 ( the true minimum version is not yet confirmed ) 
 ``` 
