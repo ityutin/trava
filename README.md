@@ -40,6 +40,11 @@ trava.fit_predict(raw_split_data=split_result,
                   model_id='xgb',  # uniquely identifies your model
                   model_type=xgb.XGBClassifier,  # what model to run
                   model_init_params={'max_depth': 3})  # parameters to init model with
+
+# then go on playing with other models 
+...
+# call this to get all previous results at once
+trava.results 
 ```
 
 ### Prerequisites
