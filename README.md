@@ -1,5 +1,5 @@
 # 🌿 Trava ( initially stands for TrainValidation )
-Framework that helps to train models, compare them and track parameters&metrics along the way. Works with only tabular data.
+Framework that helps to train models, compare them and track parameters&metrics along the way. Works with tabular data only.
 
 ## Why
 
@@ -9,15 +9,15 @@ Another important thing is experiment tracking. **Trava** helps you to track all
 
 ## How
 
-You tell what metrics you want to calculate and how results should be presented to you. Then you just run **Trava** using a model of your choice and parameters for it. Fit&predict process is customizable as well. See examples/ dir for the details.
+You tell what metrics you want to calculate and how results should be presented to you. Then you just run **Trava** using a model of your choice and parameters for it. Fit&predict process is customizable as well. See examples/ dir for the details. For now only sklearn-style model are supported. ( *fit*, *predict*, *predict_proba* methods )
 
 ## Example
 
-Note: See example/Basics.ipynb for the intro tour.
+Note: See examples/Basics.ipynb for the intro tour.
 
 
 ```
-# what metrics to calculate
+# what metrics to calculate. sk(...) means wrapper for sklearn metrics, custom metrics are easily supported as well.
 scorers = [sk(recall_score), sk(precision_score)]
 
 # how to show the metrics. In this case dictionary with metrics values will be returned
@@ -44,14 +44,12 @@ trava.fit_predict(raw_split_data=split_result,
 
 ### Prerequisites
 
-Pandas is required for using the lib. 
-
-The lib was written using Python 3.7, yet I currently don't know the minimum Python version required.  
-
-It's also convenient to use the lib with sklearn ( e.g. for taking metrics from there. ). Also couple of extensions are based on sklearn classes.
-
 ```
 pandas
 numpy
 python 3.7 ( the true minimum version is not yet confirmed ) 
 ``` 
+
+The lib was written using Python 3.7, yet I currently don't know the minimum Python version required.  
+
+It's also convenient to use the lib with sklearn ( e.g. for taking metrics from there. ). Also couple of extensions are based on sklearn classes.
