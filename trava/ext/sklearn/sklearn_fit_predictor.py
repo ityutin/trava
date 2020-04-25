@@ -25,11 +25,15 @@ class PreprocessingConfigUpdateStep(FitPredictConfigUpdateStep):
     def fit_split_data(self, raw_split_data: SplitResult, config: FitPredictConfig) -> SplitResult:
         X_train = self._preprocessing.fit_transform(X=raw_split_data.X_train)
         X_test = self._preprocessing.transform(raw_split_data.X_test)
-        X_valid = self._preprocessing.transform(raw_split_data.X_valid)
+
+        if raw_split_data.X_valid is None:
+            X_valid = None
+        else:
+            X_valid = self._preprocessing.transform(raw_split_data.X_valid)
 
         result = SplitResult(X_train=X_train,
-                             y_train=raw_split_data.y_train,
                              X_test=X_test,
+                             y_train=raw_split_data.y_train,
                              y_test=raw_split_data.y_test,
                              X_valid=X_valid,
                              y_valid=raw_split_data.y_valid)
