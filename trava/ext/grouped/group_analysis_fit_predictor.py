@@ -1,7 +1,7 @@
 from typing import Tuple, List
 
 from trava.fit_predictor import FitPredictConfig, FitPredictor, RawModelUpdateStep, FitPredictConfigUpdateStep, \
-    FinalHandlerStep
+    FinalHandlerStep, FitPredictorSteps
 from trava.logger import TravaLogger
 from trava.trava_model import TravaModel
 from trava.split.result import SplitResult
@@ -15,13 +15,9 @@ class GroupAnalysisFitPredictor(FitPredictor):
     """
     def __init__(self,
                  group_col_name: str,
-                 raw_model_update_steps: List[RawModelUpdateStep] = None,
-                 config_update_steps: List[FitPredictConfigUpdateStep] = None,
-                 final_steps: List[FinalHandlerStep] = None,
+                 steps: FitPredictorSteps = None,
                  logger: TravaLogger = None):
-        super().__init__(raw_model_update_steps=raw_model_update_steps,
-                         config_update_steps=config_update_steps,
-                         final_steps=final_steps,
+        super().__init__(steps=steps or FitPredictorSteps(),
                          logger=logger)
 
         self._group_col_name = group_col_name
@@ -47,7 +43,7 @@ class TrainOnOneTestOnOneFitPredictor(GroupAnalysisFitPredictor):
         result = []
         for group in unique_groups:
             model_config = self._config_for_group(group=group, config=config)
-            group_model_id = model_config.model_id + '_one_on_one_' + str(group)
+            group_model_id = model_config.model_id + '_' + str(group)
             trava_model = TravaModel(raw_model=raw_model, model_id=group_model_id)
 
             result.append((trava_model, model_config))
@@ -96,7 +92,7 @@ class TrainOnAllTestOnOneFitPredictor(GroupAnalysisFitPredictor):
         main_model = None
         for group in unique_groups:
             group_config = self._config_for_group(group=group, config=config)
-            group_model_id = group_config.model_id + '_all_on_one_' + str(group)
+            group_model_id = group_config.model_id + '_' + str(group)
             if main_model:
                 result_model = main_model.copy(model_id=group_model_id)
             else:

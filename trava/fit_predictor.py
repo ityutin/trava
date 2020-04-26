@@ -95,6 +95,7 @@ class FitPredictConfigUpdateStep:
     """
     Using this step you can update parameters containing
     in FitPredictConfig to then use them in fit&predict process.
+    All methods will be called in the presented order.
     """
     def fit_split_data(self, raw_split_data: SplitResult, config: FitPredictConfig) -> SplitResult:
         """
@@ -162,6 +163,27 @@ class FinalHandlerStep(ABC):
         pass
 
 
+class FitPredictorSteps:
+    def __init__(self,
+                 raw_model_steps: List[RawModelUpdateStep] = None,
+                 config_steps: List[FitPredictConfigUpdateStep] = None,
+                 final_steps: List[FinalHandlerStep] = None):
+        self.raw_model_steps = raw_model_steps or []
+        self.config_steps = config_steps or []
+        self.final_steps = final_steps or []
+
+    def __add__(self, other):
+        raw_model_steps = self.raw_model_steps + other.raw_model_steps
+        config_steps = self.config_steps + other.config_steps
+        final_steps = self.final_steps + other.final_steps
+
+        result = FitPredictorSteps(raw_model_steps=raw_model_steps,
+                                   config_steps=config_steps,
+                                   final_steps=final_steps)
+
+        return result
+
+
 # noinspection PyMethodMayBeStatic
 class FitPredictor(ABC):
     """
@@ -180,14 +202,10 @@ class FitPredictor(ABC):
         Logger object to inform you about the flow.
     """
     def __init__(self,
-                 raw_model_update_steps: List[RawModelUpdateStep] = None,
-                 config_update_steps: List[FitPredictConfigUpdateStep] = None,
-                 final_steps: List[FinalHandlerStep] = None,
+                 steps: FitPredictorSteps = None,
                  logger: TravaLogger = None):
-        self._raw_model_steps = raw_model_update_steps or []
-        self._config_steps = config_update_steps or []
+        self._steps = steps or FitPredictorSteps()
 
-        self._final_steps = final_steps or []
         self._logger = logger or TravaLogger()
 
     def fit_predict(self, config: FitPredictConfig, tracker: TravaTracker) -> [Evaluator]:
@@ -207,7 +225,7 @@ class FitPredictor(ABC):
         """
         raw_model = config.raw_model
 
-        for updater in self._raw_model_steps:
+        for updater in self._steps.raw_model_steps:
             raw_model = updater.update_model(raw_model=raw_model, config=config)
 
         # here will be stored evaluators for models, one for each model
@@ -242,7 +260,7 @@ class FitPredictor(ABC):
             fit_params = model_config.fit_params
             predict_params = model_config.predict_params
             # preparing data and parameters for fit&predict
-            for config_updater in self._config_steps:
+            for config_updater in self._steps.config_steps:
                 split_result_fit = config_updater.fit_split_data(raw_split_data=split_result_fit,
                                                                  config=model_config)
 
@@ -271,7 +289,7 @@ class FitPredictor(ABC):
                           y=split_result_fit.y_test)
 
             # performing custom final steps provided in init
-            for step in self._final_steps:
+            for step in self._steps.final_steps:
                 step.handle(trava_model=trava_model, config=model_config)
 
             self._logger.log(msg='Model evaluation {}'.format(model_id))

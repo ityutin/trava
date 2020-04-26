@@ -84,21 +84,22 @@ def main_model_id(model_id):
 
 
 @pytest.fixture()
-def model(mocker):
+def raw_model(mocker):
     model_mock = mocker.Mock()
     return model_mock
 
 
 @pytest.fixture()
-def trava_model(mocker):
+def trava_model(mocker, raw_model):
     model_mock = mocker.Mock()
+    trava_model.raw_model = raw_model
     return model_mock
 
 
 @pytest.fixture
-def model_type(mocker, model):
+def model_type(mocker, raw_model):
     model_type = mocker.stub()
-    model_type.return_value = model
+    model_type.return_value = raw_model
 
     return model_type
 
@@ -207,7 +208,7 @@ def test_model_init(trava: TravaSV,
 
 
 def test_fit_predictor(mocker,
-                       model,
+                       raw_model,
                        trava: TravaSV,
                        raw_dataset: RawDataset,
                        split_result: SplitResult,
@@ -239,7 +240,7 @@ def test_fit_predictor(mocker,
 
     test_fit_config = FitPredictConfig(raw_split_data=split_result,
                                        raw_dataset=raw_dataset,
-                                       raw_model=model,
+                                       raw_model=raw_model,
                                        model_init_params=model_init_params,
                                        model_id=model_id,
                                        scorers_providers=test_result_handlers + [trava_tracker],
@@ -330,7 +331,7 @@ def test_evaluate_save(mocker,
                        trava,
                        model_id,
                        main_model_id,
-                       model,
+                       raw_model,
                        trava_model,
                        model_type,
                        split_result,
@@ -338,7 +339,7 @@ def test_evaluate_save(mocker,
                        X_y_test,
                        n_evaluators):
     any_and_test_data = 1233
-    trava_model.get_model.return_value = model
+    trava_model.get_model.return_value = raw_model
     trava_model.any_and_test_data = any_and_test_data
 
     result_handlers = [TestResultsHandler(scorers=[
@@ -573,3 +574,34 @@ def test_evaluate_dont_keep_data(mocker,
 
     for evaluator in evaluators:
         evaluator.unload_data.assert_called()
+
+
+@pytest.mark.parametrize("n_evaluators", [1, 3])
+def test_raw_models(mocker,
+                    trava,
+                    model_id,
+                    main_model_id,
+                    model_type,
+                    raw_model,
+                    trava_model,
+                    split_result,
+                    test_result_handlers,
+                    n_evaluators):
+    evaluators = _fit_with_n_evaluators(mocker=mocker,
+                                        trava_model=trava_model,
+                                        model_id=model_id,
+                                        main_model_id=main_model_id,
+                                        model_type=model_type,
+                                        split_result=split_result,
+                                        trava=trava,
+                                        n_evaluators=n_evaluators,
+                                        test_result_handlers=test_result_handlers,
+                                        keep_data_in_memory=False,
+                                        mock_evaluators=False)
+
+    target_model_id = model_id if n_evaluators == 1 else main_model_id
+    raw_models = trava.raw_models_for(model_id=target_model_id)
+
+    test_raw_models = dict([(evaluator.model_id, evaluator.trava_model.raw_model) for evaluator in evaluators])
+
+    assert raw_models == test_raw_models

@@ -9,6 +9,7 @@ __pycache__/
 mlruns/
 catboost_info/
 .idea/
+trava/framework/
 
 # Distribution / packaging
 .Python

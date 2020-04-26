@@ -4,7 +4,7 @@ from sklearn.pipeline import Pipeline
 
 from trava.ext.boosting_eval.boosting_logic import CommonBoostingEvalLogic
 from trava.fit_predictor import FitPredictConfig, FitPredictConfigUpdateStep, FinalHandlerStep, FitPredictor, \
-    RawModelUpdateStep
+    RawModelUpdateStep, FitPredictorSteps
 from trava.logger import TravaLogger
 from trava.trava_model import TravaModel
 from trava.split.result import SplitResult
@@ -65,31 +65,19 @@ class PlotEvalResultsStep(FinalHandlerStep):
         self._eval_logic.plot_if_needed(model_id=trava_model.model_id, model=trava_model.raw_model)
 
 
-class EvalFitPredictor(FitPredictor):
+class EvalFitSteps(FitPredictorSteps):
     """
     Is used for training model with evaluation sets.
     Was made for boosting models.
-    Just a wrapper for FitPredictor steps.
 
     Init parameters
     ----------
     eval_logic: Eval
         Contains logic of how to perform evaluation on the model.
     """
-    def __init__(self,
-                 eval_logic: CommonBoostingEvalLogic,
-                 raw_model_update_steps: List[RawModelUpdateStep] = None,
-                 config_update_steps: List[FitPredictConfigUpdateStep] = None,
-                 final_steps: List[FinalHandlerStep] = None,
-                 logger: TravaLogger = None):
-        raw_model_update_steps = raw_model_update_steps or []
-        config_update_steps = config_update_steps or []
-        final_steps = final_steps or []
-
+    def __init__(self, eval_logic: CommonBoostingEvalLogic):
         config_step = EvalConfigStep(eval_logic=eval_logic)
         plot_step = PlotEvalResultsStep(eval_logic=eval_logic)
 
-        super().__init__(raw_model_update_steps=raw_model_update_steps,
-                         config_update_steps=config_update_steps + [config_step],
-                         final_steps=final_steps + [plot_step],
-                         logger=logger)
+        super().__init__(config_steps=[config_step],
+                         final_steps=[plot_step])

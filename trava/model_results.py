@@ -38,7 +38,7 @@ class ModelResult:
         return len(self._evaluators) == 1
 
     @property
-    def raw_models(self) -> Optional[list]:
+    def raw_models(self) -> Optional[dict]:
         """
         Gets the raw models
 
@@ -46,7 +46,7 @@ class ModelResult:
         -------
         List of trained models
         """
-        return [evaluator.trava_model.raw_model for evaluator in self._evaluators]
+        return dict([(evaluator.model_id, evaluator.trava_model.raw_model) for evaluator in self._evaluators])
 
     @property
     def evaluators(self) -> Optional[List[Evaluator]]:

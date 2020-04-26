@@ -44,17 +44,18 @@ def test_is_one_fit_result(mocker, model_id, n_evaluators):
 
 @pytest.mark.parametrize("n_evaluators", [1, 3])
 def test_models(mocker, model_id, n_evaluators):
-    raw_models = []
+    raw_models = {}
     evaluators = []
-    for _ in range(n_evaluators):
+    for idx in range(n_evaluators):
         evaluator = mocker.Mock()
         trava_model = mocker.Mock()
         raw_model = mocker.Mock()
         trava_model.raw_model = raw_model
+        evaluator.model_id = model_id + '_' + str(idx)
         evaluator.trava_model = trava_model
 
         evaluators.append(evaluator)
-        raw_models.append(raw_model)
+        raw_models[evaluator.model_id] = raw_model
 
     model_result = ModelResult(model_id=model_id, evaluators=evaluators)
 

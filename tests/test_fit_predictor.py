@@ -1,7 +1,7 @@
 import pytest
 from copy import copy
 
-from trava.fit_predictor import FitPredictor
+from trava.fit_predictor import FitPredictor, FitPredictorSteps
 from trava.split.result import SplitResult
 
 
@@ -60,7 +60,8 @@ def test_model_update_steps(mocker, n_steps, raw_model):
         step.update_model.return_value = raw_model
         steps.append(step)
 
-    fp = FitPredictor(raw_model_update_steps=steps)
+    fp_steps = FitPredictorSteps(raw_model_steps=steps)
+    fp = FitPredictor(steps=fp_steps)
 
     fp.fit_predict(config=config, tracker=mocker.Mock())
 
@@ -103,8 +104,8 @@ def test_config_update_steps(mocker, n_steps, split_result, raw_model):
         step.fit_params.return_value = fit_params
         step.predict_params.return_value = predict_params
         steps.append(step)
-
-    fp = FitPredictor(config_update_steps=steps)
+    fp_steps = FitPredictorSteps(config_steps=steps)
+    fp = FitPredictor(steps=fp_steps)
 
     models_configs_func = mocker.patch.object(fp, '_models_configs')
     models_configs_func.return_value = [(mocker.Mock(), config)]
@@ -138,8 +139,8 @@ def test_config_after_fit_steps(mocker, split_result, raw_model, n_steps):
         step.fit_params.return_value = fit_params
         step.predict_params.return_value = predict_params
         steps.append(step)
-
-    fp = FitPredictor(final_steps=steps)
+    fp_steps = FitPredictorSteps(final_steps=steps)
+    fp = FitPredictor(steps=fp_steps)
 
     models_configs_func = mocker.patch.object(fp, '_models_configs')
     trava_model = mocker.Mock()

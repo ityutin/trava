@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 from trava.ext.cv.base import CV
 from trava.fit_predictor import FitPredictor, RawModelUpdateStep, FitPredictConfigUpdateStep, FinalHandlerStep, \
-    FitPredictConfig
+    FitPredictConfig, FitPredictorSteps
 from trava.logger import TravaLogger
 from trava.trava_model import TravaModel
 from trava.split.result import SplitResult
@@ -13,13 +13,9 @@ class CVFitPredictor(FitPredictor):
                  cv: CV,
                  ignore_cols: List[str],
                  groups=None,
-                 raw_model_update_steps: List[RawModelUpdateStep] = None,
-                 config_update_steps: List[FitPredictConfigUpdateStep] = None,
-                 final_steps: List[FinalHandlerStep] = None,
+                 steps: FitPredictorSteps = None,
                  logger: TravaLogger = None):
-        super().__init__(raw_model_update_steps=raw_model_update_steps,
-                         config_update_steps=config_update_steps,
-                         final_steps=final_steps,
+        super().__init__(steps=steps or FitPredictorSteps(),
                          logger=logger)
 
         self._cv = cv
