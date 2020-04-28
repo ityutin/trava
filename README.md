@@ -1,9 +1,6 @@
 # 🌿 Trava ( initially stands for TrainValidation )
 Framework that helps to train models, compare them and track parameters&metrics along the way. Works with tabular data only.
 
-Known-issues:
-- Model serialization & artifact tracking doesn't work yet.
-
 ## Why
 
 When experimenting with some data&models, notebooks quickly become messy and unreliable. Usually when we solve some problem we are focused on some set of metrics and we want to compare models with each other. This lib tries to provide unified interface for this and other tasks.
