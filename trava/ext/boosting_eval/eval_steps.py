@@ -6,6 +6,7 @@ from trava.ext.boosting_eval.boosting_logic import CommonBoostingEvalLogic
 from trava.fit_predictor import FitPredictConfig, FitPredictConfigUpdateStep, FinalHandlerStep, FitPredictor, \
     RawModelUpdateStep, FitPredictorSteps
 from trava.logger import TravaLogger
+from trava.tracker import Tracker
 from trava.trava_model import TravaModel
 from trava.split.result import SplitResult
 
@@ -29,7 +30,11 @@ class EvalConfigStep(FitPredictConfigUpdateStep):
                  eval_logic: CommonBoostingEvalLogic):
         self._eval_logic = eval_logic
 
-    def fit_params(self, fit_params: dict, fit_split_data: SplitResult, config: FitPredictConfig) -> dict:
+    def fit_params(self,
+                   fit_params: dict,
+                   fit_split_data: SplitResult,
+                   config: FitPredictConfig,
+                   tracker: Tracker) -> dict:
         split_result = fit_split_data
         self._assert_eval(X_eval=split_result.X_valid, y_eval=split_result.y_valid)
 
@@ -47,7 +52,7 @@ class EvalConfigStep(FitPredictConfigUpdateStep):
         assert X_eval is not None and y_eval is not None, assert_text
 
 
-class PlotEvalResultsStep(FinalHandlerStep):
+class EvalFinalStep(FinalHandlerStep):
     """
     Is used for training model with evaluation sets.
     Was made for boosting models.
@@ -61,8 +66,9 @@ class PlotEvalResultsStep(FinalHandlerStep):
     def __init__(self, eval_logic: CommonBoostingEvalLogic):
         self._eval_logic = eval_logic
 
-    def handle(self, trava_model: TravaModel, config: FitPredictConfig):
-        self._eval_logic.plot_if_needed(model_id=trava_model.model_id, model=trava_model.raw_model)
+    def handle(self, trava_model: TravaModel, config: FitPredictConfig, tracker: Tracker):
+        self._eval_logic.plot_if_needed(model_id=trava_model.model_id, model=trava_model.raw_model, tracker=tracker)
+        self._eval_logic.track_eval_metrics(model_id=trava_model.model_id, model=trava_model.raw_model, tracker=tracker)
 
 
 class EvalFitSteps(FitPredictorSteps):
@@ -77,7 +83,7 @@ class EvalFitSteps(FitPredictorSteps):
     """
     def __init__(self, eval_logic: CommonBoostingEvalLogic):
         config_step = EvalConfigStep(eval_logic=eval_logic)
-        plot_step = PlotEvalResultsStep(eval_logic=eval_logic)
+        final_step = EvalFinalStep(eval_logic=eval_logic)
 
         super().__init__(config_steps=[config_step],
-                         final_steps=[plot_step])
+                         final_steps=[final_step])

@@ -4,7 +4,7 @@ from typing import Optional, List
 from trava.logger import TravaLogger
 from trava.model_results import ModelResult
 from trava.results_handler import ResultsHandler
-from trava.tracker import TravaTracker
+from trava.trava_tracker import Tracker, TravaTracker
 
 
 class _TravaBase(ABC):
@@ -18,14 +18,14 @@ class _TravaBase(ABC):
     ----------
     logger: TravaLogger
         Encapsulates logic of work with native python logger
-    tracker: TravaTracker
+    tracker: Tracker
         Is used to track your experiments
     results_handlers: list
         Each results handler provides logic how to present the metrics to a user.
     """
     def __init__(self,
                  logger: Optional[TravaLogger] = None,
-                 tracker: Optional[TravaTracker] = None,
+                 tracker: Optional[Tracker] = None,
                  results_handlers: List[ResultsHandler] = None):
         self._logger = logger or TravaLogger()
         self._tracker = tracker or TravaTracker(scorers=[])
@@ -58,7 +58,7 @@ class _TravaBase(ABC):
         """
         result = []
         for handler in results_handlers:
-            handler_result = handler.handle(results=results, logger=self._logger)
+            handler_result = handler.handle(results=results, logger=self._logger, tracker=self._tracker)
             if handler_result is not None:
                 result.append(handler_result)
 

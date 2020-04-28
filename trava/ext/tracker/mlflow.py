@@ -4,8 +4,9 @@ import mlflow
 import mlflow.sklearn
 
 from trava.metric import Metric
+from trava.model_serializer import ModelSerializer
 from trava.scorer import Scorer
-from trava.tracker import TravaTracker
+from trava.trava_tracker import TravaTracker
 
 
 class _RunInfo:
@@ -53,7 +54,7 @@ class MLFlowTracker(TravaTracker):
         mlflow.set_experiment(group)
 
     def _track_model_description(self, model_id: str, description: str):
-        mlflow.set_tag('description', description)
+        self.track_tag(model_id=model_id, tag_key='description', tag_value=description)
 
     def _track_model_init_params(self, model_id: str, params: dict):
         mlflow.log_params(params)
@@ -64,14 +65,17 @@ class MLFlowTracker(TravaTracker):
     def _track_predict_params(self, model_id: str, params: dict):
         super()._track_predict_params(model_id, params)
 
-    def _track_metric(self, model_id: str, metric: Metric):
-        mlflow.log_metric(metric.name, metric.value)
+    def _track_metric_value(self, model_id: str, name: str, value, step=None):
+        mlflow.log_metric(name, value, step=step)
 
     def _track_model_info(self, model_id: str, model):
-        mlflow.set_tag('model_type', type(model).__name__)
+        self.track_tag(model_id=model_id, tag_key='model_type', tag_value=type(model).__name__)
 
-    def _track_model_artifact(self, model_id: str, model):
-        super()._track_model_artifact(model_id, model)
+    def _track_tag(self, model_id: str, tag_key: str, tag_value):
+        mlflow.set_tag(tag_key, tag_value)
+
+    def _track_artifact(self, model_id: str, file_path):
+        mlflow.log_artifact(local_path=file_path)
 
     def _save_run_id(self, run_name: str, model_id: str):
         run_id = mlflow.active_run().info.run_id

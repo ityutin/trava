@@ -4,6 +4,9 @@ from trava.ext.boosting_eval.boosting_logic import CommonBoostingEvalLogic
 
 
 class XGBoostEvalLogic(CommonBoostingEvalLogic):
+    def _best_iteration(self, model) -> int:
+        return model.best_iteration
+
     def _evals_results(self, model) -> dict:
         return model.evals_result()
 

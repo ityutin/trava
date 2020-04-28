@@ -1,6 +1,7 @@
 import pytest
 from copy import copy
 
+from tests.objects_for_tests import TestSerializer
 from trava.fit_predictor import FitPredictor, FitPredictorSteps
 from trava.split.result import SplitResult
 
@@ -110,18 +111,23 @@ def test_config_update_steps(mocker, n_steps, split_result, raw_model):
     models_configs_func = mocker.patch.object(fp, '_models_configs')
     models_configs_func.return_value = [(mocker.Mock(), config)]
 
-    fp.fit_predict(config=config, tracker=mocker.Mock())
+    tracker = mocker.Mock()
+    fp.fit_predict(config=config, tracker=tracker)
 
     for step in steps:
-        step.fit_split_data.assert_called_with(raw_split_data=split_result, config=config)
-        step.fit_params.assert_called_with(fit_params=fit_params, fit_split_data=split_result, config=config)
+        step.fit_split_data.assert_called_with(raw_split_data=split_result, config=config, tracker=tracker)
+        step.fit_params.assert_called_with(fit_params=fit_params,
+                                           fit_split_data=split_result,
+                                           config=config,
+                                           tracker=tracker)
         step.predict_params.assert_called_with(predict_params=predict_params,
                                                fit_split_data=split_result,
-                                               config=config)
+                                               config=config,
+                                               tracker=tracker)
 
 
 @pytest.mark.parametrize("n_steps", [1, 3])
-def test_config_after_fit_steps(mocker, split_result, raw_model, n_steps):
+def test_final_steps(mocker, split_result, raw_model, n_steps):
     fit_params = {'c': 2, 'd': 3}
     predict_params = {'_': 4, '+': 5}
 
@@ -146,26 +152,27 @@ def test_config_after_fit_steps(mocker, split_result, raw_model, n_steps):
     trava_model = mocker.Mock()
     models_configs_func.return_value = [(trava_model, config)]
 
-    fp.fit_predict(config=config, tracker=mocker.Mock())
+    tracker = mocker.Mock()
+    fp.fit_predict(config=config, tracker=tracker)
 
     for step in steps:
-        step.handle.assert_called_with(trava_model=trava_model, config=config)
+        step.handle.assert_called_with(trava_model=trava_model, config=config, tracker=tracker)
 
 
 @pytest.mark.parametrize("n_models", [1, 3])
 @pytest.mark.parametrize("has_description", [True, False], ids=['has_descr', 'no_descr'])
-@pytest.mark.parametrize("should_serialize", [True, False], ids=['serial', 'no_serial'])
+@pytest.mark.parametrize("serializer", [TestSerializer(), None], ids=['serial', 'no_serial'])
 def test_tracking(mocker,
                   model_id,
                   split_result,
                   raw_model,
                   n_models,
                   has_description,
-                  should_serialize):
+                  serializer):
     config = mocker.Mock()
     config.model_id = model_id
     config.raw_split_data = split_result
-    config.serialize_model = should_serialize
+    config.serializer = serializer
     config.raw_model = raw_model
     model_init_params = mocker.Mock()
 
@@ -236,9 +243,9 @@ def test_tracking(mocker,
             mocker.call.track_model_results(model_results=model_results)
         ]
 
-        if should_serialize:
+        if serializer:
             expected_calls += [
-                mocker.call.track_model_artifact(model_id=model.model_id, model=raw_model)
+                mocker.call.track_model_artifact(model_id=model.model_id, model=raw_model, serializer=serializer)
             ]
 
         expected_calls += [

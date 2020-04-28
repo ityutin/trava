@@ -4,6 +4,7 @@ from trava.ext.boosting_eval.boosting_logic import CommonBoostingEvalLogic
 from trava.ext.boosting_eval.eval_steps import EvalFitSteps
 from trava.fit_predictor import FitPredictConfig, FitPredictConfigUpdateStep, FitPredictorSteps
 from trava.split.result import SplitResult
+from trava.tracker import Tracker
 
 
 class _GroupConfigUpdateStep(FitPredictConfigUpdateStep):
@@ -11,7 +12,10 @@ class _GroupConfigUpdateStep(FitPredictConfigUpdateStep):
                  group_col_name: str):
         self._group_col_name = group_col_name
 
-    def fit_split_data(self, raw_split_data: SplitResult, config: FitPredictConfig) -> SplitResult:
+    def fit_split_data(self,
+                       raw_split_data: SplitResult,
+                       config: FitPredictConfig,
+                       tracker: Tracker) -> SplitResult:
         X_valid = None
         if raw_split_data.X_valid is not None:
             X_valid = raw_split_data.X_valid.drop(self._group_col_name, axis=1)
@@ -25,7 +29,11 @@ class _GroupConfigUpdateStep(FitPredictConfigUpdateStep):
 
         return result
 
-    def fit_params(self, fit_params: dict, fit_split_data: SplitResult, config: FitPredictConfig) -> dict:
+    def fit_params(self,
+                   fit_params: dict,
+                   fit_split_data: SplitResult,
+                   config: FitPredictConfig,
+                   tracker: Tracker) -> dict:
         train_counted_groups = self._counted_groups(X=config.raw_split_data.X_train)
         fit_params['group'] = train_counted_groups
 
@@ -41,8 +49,15 @@ class _GroupEvalConfigUpdateStep(_GroupConfigUpdateStep):
     def __init__(self, group_col_name: str):
         super().__init__(group_col_name=group_col_name)
 
-    def fit_params(self, fit_params: dict, fit_split_data: SplitResult, config: FitPredictConfig) -> dict:
-        fit_params = super().fit_params(fit_params=fit_params, fit_split_data=fit_split_data, config=config)
+    def fit_params(self,
+                   fit_params: dict,
+                   fit_split_data: SplitResult,
+                   config: FitPredictConfig,
+                   tracker: Tracker) -> dict:
+        fit_params = super().fit_params(fit_params=fit_params,
+                                        fit_split_data=fit_split_data,
+                                        config=config,
+                                        tracker=tracker)
 
         assert config.raw_split_data.X_valid is not None, "X_valid set must be present to run evaluation"
 

@@ -18,7 +18,7 @@ def model(mocker, model_id):
 def test_equality(mocker, model, model_id):
     model_init_params = {'a': 1, 'b': 2}
     scorers_providers = mocker.MagicMock()
-    serialize_model = False
+    serializer = mocker.Mock()
     split_result = mocker.Mock()
     raw_dataset = mocker.Mock()
     fit_params = {'c': 3, 'd': 4}
@@ -29,7 +29,7 @@ def test_equality(mocker, model, model_id):
                                     model_init_params=model_init_params,
                                     model_id=model_id,
                                     scorers_providers=scorers_providers,
-                                    serialize_model=serialize_model,
+                                    serializer=serializer,
                                     raw_split_data=split_result,
                                     raw_dataset=raw_dataset,
                                     fit_params=fit_params,
@@ -40,7 +40,7 @@ def test_equality(mocker, model, model_id):
                                      model_init_params=model_init_params,
                                      model_id=model_id,
                                      scorers_providers=scorers_providers,
-                                     serialize_model=serialize_model,
+                                     serializer=serializer,
                                      raw_split_data=split_result,
                                      raw_dataset=raw_dataset,
                                      fit_params=fit_params,
@@ -48,7 +48,7 @@ def test_equality(mocker, model, model_id):
                                      description=description)
 
     assert first_config == second_config
-    second_config.serialize_model = not first_config.serialize_model
+    second_config.serializer = mocker.Mock()
     assert first_config != second_config
     assert first_config != 'str'
 
@@ -56,6 +56,6 @@ def test_equality(mocker, model, model_id):
                                    model_init_params=None,
                                    model_id='123',
                                    scorers_providers=[],
-                                   serialize_model=True,
+                                   serializer=None,
                                    raw_split_data=mocker.Mock())
     assert first_config != none_config

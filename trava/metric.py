@@ -9,7 +9,7 @@ class Metric:
     def __init__(self,
                  name: str,
                  value,
-                 model_id: Optional[str] = None):
+                 model_id: str):
         """
         Parameters
         ----------

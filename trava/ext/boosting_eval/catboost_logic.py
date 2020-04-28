@@ -14,6 +14,9 @@ class CatBoostEvalLogic(CommonBoostingEvalLogic):
                          eval_metric=eval_metric,
                          early_stopping_rounds=early_stopping_rounds)
 
+    def _best_iteration(self, model) -> int:
+        return model.get_best_iteration()
+
     def _evals_results(self, model) -> dict:
         return model.get_evals_result()
 

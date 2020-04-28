@@ -2,8 +2,9 @@ from typing import Optional, List
 
 from trava.logger import TravaLogger
 from trava.metric import Metric
+from trava.model_serializer import ModelSerializer
 from trava.scorer import Scorer
-from trava.tracker import TravaTracker
+from trava.trava_tracker import TravaTracker
 
 
 class LogTracker(TravaTracker):
@@ -33,13 +34,16 @@ class LogTracker(TravaTracker):
     def _track_predict_params(self, model_id: str, params: dict):
         self._logger.log('Track predict params: {} - {}'.format(model_id, params))
 
-    def _track_metric(self, model_id: str, metric: Metric):
-        self._logger.log('Track metric: {} - {} : {}'.format(model_id, metric.name, metric.value))
+    def _track_metric_value(self, model_id: str, name: str, value, step=None):
+        self._logger.log('Track metric: {} - {} : {}'.format(model_id, name, value))
 
     def _track_model_info(self, model_id: str, model):
         self._logger.log('Track model: {} - {}'.format(model_id, model))
 
-    def _track_model_artifact(self, model_id: str, model):
+    def _track_tag(self, model_id: str, tag_key: str, tag_value):
+        self._logger.log('Track tag: {} - {}'.format(model_id, tag_value))
+
+    def track_model_artifact(self, model_id: str, model, serializer: ModelSerializer):
         self._logger.log('Track artifact: {} - {}'.format(model_id, model))
 
     def _track(self, model_id: str, *args, **kwargs):

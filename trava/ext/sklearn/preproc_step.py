@@ -4,6 +4,7 @@ from sklearn.pipeline import Pipeline
 
 from trava.fit_predictor import FitPredictConfigUpdateStep, FitPredictConfig
 from trava.split.result import SplitResult
+from trava.tracker import Tracker
 
 
 class PreprocConfigStep(FitPredictConfigUpdateStep):
@@ -19,7 +20,10 @@ class PreprocConfigStep(FitPredictConfigUpdateStep):
     def __init__(self, preprocessing: Pipeline = None):
         self._preprocessing = preprocessing
 
-    def fit_split_data(self, raw_split_data: SplitResult, config: FitPredictConfig) -> SplitResult:
+    def fit_split_data(self,
+                       raw_split_data: SplitResult,
+                       config: FitPredictConfig,
+                       tracker: Tracker) -> SplitResult:
         X_train = self._preprocessing.fit_transform(X=raw_split_data.X_train)
         X_test = self._preprocessing.transform(X=raw_split_data.X_test)
 
@@ -37,13 +41,21 @@ class PreprocConfigStep(FitPredictConfigUpdateStep):
 
         return result
 
-    def fit_params(self, fit_params: dict, fit_split_data: SplitResult, config: FitPredictConfig) -> dict:
+    def fit_params(self,
+                   fit_params: dict,
+                   fit_split_data: SplitResult,
+                   config: FitPredictConfig,
+                   tracker: Tracker) -> dict:
         """
         Previous steps could already put some data in params.
         """
         return self._find_and_process_df(params=fit_params)
 
-    def predict_params(self, predict_params: dict, fit_split_data: SplitResult, config: FitPredictConfig) -> dict:
+    def predict_params(self,
+                       predict_params: dict,
+                       fit_split_data: SplitResult,
+                       config: FitPredictConfig,
+                       tracker: Tracker) -> dict:
         return self._find_and_process_df(params=predict_params)
 
     def _find_and_process_df(self, params: dict) -> dict:

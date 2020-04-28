@@ -1,10 +1,12 @@
 from typing import List
 
 from trava.logger import TravaLogger
+from trava.model_serializer import ModelSerializer
 from trava.scorer import Scorer, OtherScorer
 from trava.model_info import ModelInfo
 from trava.model_results import ModelResult
 from trava.results_handler import ResultsHandler
+from trava.trava_tracker import Tracker
 
 
 class TestScorer(Scorer):
@@ -25,7 +27,7 @@ class TestAnyScorer(OtherScorer):
 
 
 class TestResultsHandler(ResultsHandler):
-    def handle(self, results: List[ModelResult], logger: TravaLogger):
+    def handle(self, results: List[ModelResult], logger: TravaLogger, tracker: Tracker):
         all_train_metrics = []
         all_test_metrics = []
         all_any_metrics = []
@@ -40,3 +42,15 @@ class TestResultsHandler(ResultsHandler):
             [metric.value for metric in all_any_metrics] if all_any_metrics else [],
         ]
         return result
+
+
+class TestSerializer(ModelSerializer):
+    def __init__(self):
+        self._loaded = False
+        self._saved = False
+
+    def load(self, path: str):
+        self._loaded = True
+
+    def save(self, model, path: str):
+        self._loaded = False

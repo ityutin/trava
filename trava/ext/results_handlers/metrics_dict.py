@@ -5,6 +5,7 @@ from trava.metric import Metric
 from trava.model_results import ModelResult
 from trava.results_handler import ResultsHandler
 from trava.scorer import Scorer
+from trava.trava_tracker import Tracker
 
 
 class MetricsDictHandler(ResultsHandler):
@@ -16,7 +17,7 @@ class MetricsDictHandler(ResultsHandler):
 
         self._include_train_metrics = include_train_metrics
 
-    def handle(self, results: List[ModelResult], logger: TravaLogger):
+    def handle(self, results: List[ModelResult], logger: TravaLogger, tracker: Tracker):
         result = {}
 
         for model_results in results:

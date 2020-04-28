@@ -3,6 +3,8 @@ from typing import Optional
 
 import matplotlib.pyplot as plt
 
+from trava.tracker import Tracker
+
 
 class CommonBoostingEvalLogic:
     """
@@ -116,7 +118,7 @@ class CommonBoostingEvalLogic:
 
         return eval_results[key][self._get_metric_name(model=model)]
 
-    def plot_if_needed(self, model_id: str, model):
+    def plot_if_needed(self, model_id: str, model, tracker: Tracker):
         """
         If plot was requested during initialization, learning curves
         will be plotted when evaluation has finished.
@@ -127,6 +129,8 @@ class CommonBoostingEvalLogic:
             Model unique identifier, will be used for saving metrics etc
         model: sklearn-style model
             Model that supports fit, predict and predict_proba methods.
+        tracker: Tracker
+            Tracker for saving plots & eval results
         """
         if self._needs_plot:
             metric_to_plot = self._get_metric_name(model=model)
@@ -146,6 +150,59 @@ class CommonBoostingEvalLogic:
             plt.ylabel(metric_to_plot)
             plt.title('{} {}'.format('{} validation results'.format(model_id), metric_to_plot))
             plt.show()
+
+            plot_filename = 'eval_plot' + '_' + model_id
+            tracker.track_plot(model_id=model_id, fig=fig, filename=plot_filename)
+
+    def track_eval_metrics(self, model_id: str, model, tracker: Tracker):
+        """
+        Tracks eval results
+
+        Parameters
+        ----------
+        model_id: str
+            Model unique identifier, will be used for saving metrics etc
+        model: sklearn-style model
+            Model that supports fit, predict and predict_proba methods.
+        tracker: Tracker
+            Tracker for saving plots & eval results
+        """
+        metric_to_plot = self._get_metric_name(model=model)
+
+        train_results = self.train_set_results(model=model)
+        eval_results = self.eval_set_results(model=model)
+
+        tracker.track_tag(model_id=model_id, tag_key='eval_metric', tag_value=metric_to_plot)
+        tracker.track_metric_value(model_id=model_id, name='early_stopping_rounds', value=self._early_stopping_rounds)
+        tracker.track_metric_value(model_id=model_id, name='stopped_iteration', value=len(eval_results) - 1)
+        tracker.track_metric_value(model_id=model_id, name='best_iteration', value=self._best_iteration(model=model))
+
+        self._track_eval_results(model_id=model_id,
+                                 eval_results=train_results,
+                                 metric=metric_to_plot,
+                                 train=True,
+                                 tracker=tracker)
+
+        self._track_eval_results(model_id=model_id,
+                                 eval_results=eval_results,
+                                 metric=metric_to_plot,
+                                 train=False,
+                                 tracker=tracker)
+
+    @staticmethod
+    def _track_eval_results(model_id: str,
+                            eval_results: list,
+                            metric: str,
+                            train: bool,
+                            tracker: Tracker):
+        metric_name = ('train' if train else 'eval') + '_' + metric
+
+        for idx, value in enumerate(eval_results):
+            tracker.track_metric_value(model_id=model_id, name=metric_name, value=value, step=idx)
+
+    @abstractmethod
+    def _best_iteration(self, model) -> int:
+        pass
 
     @abstractmethod
     def _evals_results(self, model) -> dict:

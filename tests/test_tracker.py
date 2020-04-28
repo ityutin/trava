@@ -1,6 +1,7 @@
 import pytest
 
-from trava.tracker import TravaTracker
+from tests.objects_for_tests import TestSerializer
+from trava.trava_tracker import TravaTracker
 
 
 @pytest.fixture(scope='class')
@@ -26,9 +27,9 @@ def _parameters_for_methods(mocker, model_id):
         'track_model_init_params': dict(model_id=model_id, params=mocker.Mock()),
         'track_fit_params': dict(model_id=model_id, params=mocker.Mock()),
         'track_predict_params': dict(model_id=model_id, params=mocker.Mock()),
-        'track_metric': dict(model_id=model_id, metric=mocker.Mock()),
+        'track_metric_value': dict(model_id=model_id, name=mocker.Mock(), value=mocker.Mock()),
         'track_model_info': dict(model_id=model_id, model=mocker.Mock()),
-        'track_model_artifact': dict(model_id=model_id, model=mocker.Mock()),
+        'track_tag': dict(model_id=model_id, tag_key=mocker.Mock(), tag_value=mocker.Mock()),
         'track': dict(model_id=model_id, privet='poka'),
     }
 
@@ -74,3 +75,13 @@ def test_if_enabled_false(mocker, model_id):
 
     assert len(mocks) == len(calls)
     [mock.assert_not_called() for mock in mocks]
+
+
+def test_track_model_artifact(mocker,
+                              model_id):
+    serializer = mocker.Mock()
+    tracker = TravaTracker(scorers=[])
+    model = mocker.Mock()
+    tracker.track_model_artifact(model_id=model_id, model=model, serializer=serializer)
+
+    serializer.save.assert_called_once_with(model=model, path=mocker.ANY)

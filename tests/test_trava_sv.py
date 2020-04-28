@@ -8,7 +8,7 @@ from trava.fit_predictor import FitPredictConfig
 from trava.metric import Metric
 from trava.raw_dataset import RawDataset
 from trava.split.result import SplitResult
-from trava.tracker import TravaTracker
+from trava.trava_tracker import TravaTracker
 from trava.trava_sv import TravaSV
 
 
@@ -220,7 +220,7 @@ def test_fit_predictor(mocker,
     fit_predictor = _fit_predictor(mocker=mocker, evaluators=[])
 
     keep_models_in_memory = True
-    serialize_model = False
+    serializer = mocker.Mock()
     fit_params = {'a': 1, 'b': 2}
     predict_params = {'c': 3, 'd': 4}
     description = 'test_description'
@@ -234,7 +234,7 @@ def test_fit_predictor(mocker,
                       fit_params=fit_params,
                       predict_params=predict_params,
                       keep_models_in_memory=keep_models_in_memory,
-                      serialize_model=serialize_model)
+                      serializer=serializer)
 
     fit_predictor.fit_predict.assert_called_once()
 
@@ -244,7 +244,7 @@ def test_fit_predictor(mocker,
                                        model_init_params=model_init_params,
                                        model_id=model_id,
                                        scorers_providers=test_result_handlers + [trava_tracker],
-                                       serialize_model=serialize_model,
+                                       serializer=serializer,
                                        fit_params=fit_params,
                                        predict_params=predict_params,
                                        description=description)

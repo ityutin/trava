@@ -1,8 +1,7 @@
 from typing import List, Tuple
 
 from trava.ext.cv.base import CV
-from trava.fit_predictor import FitPredictor, RawModelUpdateStep, FitPredictConfigUpdateStep, FinalHandlerStep, \
-    FitPredictConfig, FitPredictorSteps
+from trava.fit_predictor import FitPredictor, FitPredictConfig, FitPredictorSteps
 from trava.logger import TravaLogger
 from trava.trava_model import TravaModel
 from trava.split.result import SplitResult
@@ -44,7 +43,7 @@ class CVFitPredictor(FitPredictor):
                                             model_init_params=config.model_init_params,
                                             model_id=fold_model_id,
                                             scorers_providers=config.scorers_providers,
-                                            serialize_model=config.serialize_model,
+                                            serializer=config.serializer,
                                             fit_params=config.fit_params,
                                             predict_params=config.predict_params)
 

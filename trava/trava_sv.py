@@ -4,11 +4,12 @@ from typing import Optional, List
 from trava.evaluator import Evaluator
 from trava.fit_predictor import FitPredictor, FitPredictConfig
 from trava.model_results import ModelResult
+from trava.model_serializer import ModelSerializer
 from trava.raw_dataset import RawDataset
 from trava.results_handler import ResultsHandler
 from trava.scorer import Scorer
 from trava.split.result import SplitResult
-from trava.tracker import TravaTracker
+from trava.trava_tracker import TravaTracker
 from trava.trava_base import _TravaBase
 
 
@@ -29,7 +30,7 @@ class TravaSV(_TravaBase):
                     predict_params: dict = None,
                     keep_models_in_memory: bool = True,
                     keep_data_in_memory: bool = True,
-                    serialize_model: bool = False):
+                    serializer: Optional[ModelSerializer] = None):
         """
         Calls model's fit and predict with the data provided, calculates metrics and stores them.
         model_type and model_init_params were separated for the sake of easy parameters tracking.
@@ -59,8 +60,8 @@ class TravaSV(_TravaBase):
             Whether it's needed to store models in memory after the fit
         keep_data_in_memory: bool
             Whether it's needed to store the provided data in memory after the fit
-        serialize_model: bool
-            Whether it's needed to serialize fitted model
+        serializer: ModelSerializer
+            If provided - fitted model will be serialized and tracked
 
         Returns
         -------
@@ -81,7 +82,7 @@ class TravaSV(_TravaBase):
                                        fit_predictor=fit_predictor,
                                        fit_params=fit_params,
                                        predict_params=predict_params,
-                                       serialize_model=serialize_model,
+                                       serializer=serializer,
                                        split_result=raw_split_data,
                                        raw_dataset=raw_dataset,
                                        description=description)
@@ -245,7 +246,7 @@ class TravaSV(_TravaBase):
                      fit_predictor: FitPredictor,
                      fit_params: dict,
                      predict_params: dict,
-                     serialize_model: bool,
+                     serializer: Optional[ModelSerializer],
                      split_result: Optional[SplitResult] = None,
                      raw_dataset: Optional[RawDataset] = None,
                      description: Optional[str] = None):
@@ -257,7 +258,7 @@ class TravaSV(_TravaBase):
                                   model_init_params=model_init_params,
                                   model_id=model_id,
                                   scorers_providers=all_results_handlers,
-                                  serialize_model=serialize_model,
+                                  serializer=serializer,
                                   fit_params=fit_params,
                                   predict_params=predict_params,
                                   description=description)

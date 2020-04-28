@@ -69,7 +69,7 @@ class TrainOnOneTestOnOneFitPredictor(GroupAnalysisFitPredictor):
                                   model_init_params=config.model_init_params,
                                   model_id=config.model_id,
                                   scorers_providers=config.scorers_providers,
-                                  serialize_model=config.serialize_model,
+                                  serializer=config.serializer,
                                   fit_params=config.fit_params,
                                   predict_params=config.predict_params)
 
@@ -123,7 +123,7 @@ class TrainOnAllTestOnOneFitPredictor(GroupAnalysisFitPredictor):
                                   model_init_params=config.model_init_params,
                                   model_id=config.model_id,
                                   scorers_providers=config.scorers_providers,
-                                  serialize_model=config.serialize_model,
+                                  serializer=config.serializer,
                                   fit_params=config.fit_params,
                                   predict_params=config.predict_params)
 

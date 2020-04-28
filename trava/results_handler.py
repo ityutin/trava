@@ -5,6 +5,7 @@ from trava.logger import TravaLogger
 from trava.model_results import ModelResult
 from trava.scorer import Scorer
 from trava.scorers_provider import ScorersProvider
+from trava.tracker import Tracker
 
 
 class ResultsHandler(ABC, ScorersProvider):
@@ -25,7 +26,7 @@ class ResultsHandler(ABC, ScorersProvider):
         return self._scorers
 
     @abstractmethod
-    def handle(self, results: List[ModelResult], logger: TravaLogger):
+    def handle(self, results: List[ModelResult], logger: TravaLogger, tracker: Tracker):
         """
         Implement the logic here.
 
@@ -35,6 +36,8 @@ class ResultsHandler(ABC, ScorersProvider):
             Contains metrics for all the models that were trained using TraVa so far.
         logger: TravaLogger
             If you want to log something along the way
+        tracker: Tracker
+            If you want to tracker something along the way
 
         Returns
         -------

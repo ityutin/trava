@@ -4,13 +4,14 @@ from trava.logger import TravaLogger
 from trava.metric import Metric
 from trava.model_results import ModelResult
 from trava.results_handler import ResultsHandler
+from trava.trava_tracker import Tracker
 
 
 class LoggerHandler(ResultsHandler):
     """
     Just logs all the requested metrics.
     """
-    def handle(self, results: List[ModelResult], logger: TravaLogger):
+    def handle(self, results: List[ModelResult], logger: TravaLogger, tracker: Tracker):
         logger.log('*** Logging: ***')
         for model_results in results:
             logger.log('* Results for {} model *'.format(model_results.model_id))
