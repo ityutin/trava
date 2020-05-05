@@ -164,11 +164,11 @@ class PlotHandler(ResultsHandler):
             return base_colors[idx]
 
         if use_one_figure:
-            fig, ax = self._fig_ax()
+            fig, ax = self._fig_ax(existing_fig=fig)
 
         for metric_idx, metric in enumerate(metrics):
             if not use_one_figure:
-                fig, ax = self._fig_ax()
+                fig, ax = self._fig_ax(existing_fig=fig)
 
             plot_func(metric=metric, fig=fig, ax=ax, color=color_for(idx=metric_idx), label=label)
             if not show:
@@ -176,11 +176,18 @@ class PlotHandler(ResultsHandler):
                 tracker.track_plot(model_id=model_id or metric.model_id,
                                    fig=fig,
                                    filename=filename)
+
         if show:
             fig.show()
+        else:
+            plt.close(fig)
 
     def _enumerated_metrics_plots(self, metrics_set: List[Tuple[Metric]]):
         return enumerate(zip(metrics_set, self._plot_funcs))
 
-    def _fig_ax(self) -> tuple:
+    @staticmethod
+    def _fig_ax(existing_fig=None) -> tuple:
+        if existing_fig:
+            plt.close(existing_fig)
+
         return plt.subplots(figsize=(10, 10))

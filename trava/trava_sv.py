@@ -41,11 +41,10 @@ class TravaSV(_TravaBase):
             Model unique identifier, will be used for saving metrics etc
         model_type: type of sklearn-style model
             Type of model that supports fit, predict and predict_proba methods
-            You should provide either model or model_type + model_init_params.
         description: str
             Describe the fit. It will be tracked if you set up tracker.
         model_init_params: dict
-            Parameters to use to initialize model if model_type is present
+            Parameters to use to initialize model_type
         raw_split_data: SplitResult
              Already split train/test sets
         raw_dataset: RawDataset
@@ -74,9 +73,10 @@ class TravaSV(_TravaBase):
         model_init_params = model_init_params or {}
         fit_predictor = fit_predictor or FitPredictor(logger=self._logger)
 
-        model = model_type(**model_init_params)
+        raw_model, model_init_params = self._create_raw_model(model_type=model_type,
+                                                              model_init_params=model_init_params)
 
-        evaluators = self._fit_predict(model=model,
+        evaluators = self._fit_predict(raw_model=raw_model,
                                        model_id=model_id,
                                        model_init_params=model_init_params,
                                        fit_predictor=fit_predictor,
@@ -241,7 +241,7 @@ class TravaSV(_TravaBase):
 
     def _fit_predict(self,
                      model_id: str,
-                     model,
+                     raw_model,
                      model_init_params: Optional[dict],
                      fit_predictor: FitPredictor,
                      fit_params: dict,
@@ -254,7 +254,7 @@ class TravaSV(_TravaBase):
 
         config = FitPredictConfig(raw_split_data=split_result,
                                   raw_dataset=raw_dataset,
-                                  raw_model=model,
+                                  raw_model=raw_model,
                                   model_init_params=model_init_params,
                                   model_id=model_id,
                                   scorers_providers=all_results_handlers,

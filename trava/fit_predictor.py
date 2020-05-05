@@ -261,7 +261,8 @@ class FitPredictor(ABC):
             self._start_tracking(config=config,
                                  raw_model=raw_model,
                                  model_id=config.model_id,
-                                 tracker=tracker, nested=False)
+                                 tracker=tracker,
+                                 nested=False)
 
         for trava_model, model_config in models_configs:
             # now fitting the model as many times as subclass wants

@@ -1,8 +1,9 @@
+import pytest
+import numbers
 import numpy as np
 import pandas as pd
-import pytest
 
-from tests.objects_for_tests import TestResultsHandler, TestScorer, TestAnyScorer
+from tests.objects_for_tests import TestResultsHandler, TestScorer, TestAnyScorer, TestModel
 from trava.evaluator import Evaluator
 from trava.fit_predictor import FitPredictConfig
 from trava.metric import Metric
@@ -605,3 +606,33 @@ def test_raw_models(mocker,
     test_raw_models = dict([(evaluator.model_id, evaluator.trava_model.raw_model) for evaluator in evaluators])
 
     assert raw_models == test_raw_models
+
+
+def test_create_raw_model(mocker, trava):
+    model_type = TestModel
+    def_1_value = 'custom_value'
+    req_param_value = 111
+    model_init_params = {'required_param_1': mocker.Mock(),
+                         'required_param_2': req_param_value,
+                         'def_1': def_1_value}
+    model, result_init_params = trava._create_raw_model(model_type=model_type,
+                                                        model_init_params=model_init_params)
+
+    test_init_params = {
+        'required_param_2': req_param_value,
+        'def_1': def_1_value,
+        'def_2': 'tada',
+        'def_5': False
+    }
+
+    assert isinstance(model, model_type)
+    assert result_init_params == test_init_params
+
+
+def test_allowed_init_params_types():
+    test_init_params_types = (
+        numbers.Number,
+        str,
+        bool,
+    )
+    assert TravaSV._trackable_init_params_types() == test_init_params_types

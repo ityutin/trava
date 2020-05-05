@@ -44,6 +44,17 @@ class TestResultsHandler(ResultsHandler):
         return result
 
 
+class TestModel:
+    def __init__(self, required_param_1, required_param_2, def_1=1, def_2='tada', def_3=None, def_4=[], def_5=False):
+        self._required_param_1 = required_param_1
+        self._required_param_2 = required_param_2
+        self._def_1 = def_1
+        self._def_2 = def_2
+        self._def_3 = def_3
+        self._def_4 = def_4
+        self._def_5 = def_5
+
+
 class TestSerializer(ModelSerializer):
     def __init__(self):
         self._loaded = False

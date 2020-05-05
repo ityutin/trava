@@ -1,3 +1,5 @@
+import inspect
+import numbers
 from abc import ABC
 from typing import Optional, List
 
@@ -87,3 +89,49 @@ class _TravaBase(ABC):
 
     def _assert_existing_model(self, model_id: str):
         assert self._results.get(model_id) is None, "you tried to save a model with the already existing id"
+
+    def _create_raw_model(self, model_type, model_init_params: dict) -> tuple:
+        """
+        Creates model object with the provided params.
+
+        model_type: type of sklearn-style model
+            Type of model that supports fit, predict and predict_proba methods
+        model_init_params: dict
+            Parameters to use to initialize model_type
+        :return:
+        Initialized model + trackable init parameters, including default ones.
+        See _trackable_init_params_types for supported param types.
+        """
+        raw_model = model_type(**model_init_params)
+        all_init_params = self._merge_given_params_with_default(model_type=model_type,
+                                                                model_init_params=model_init_params)
+
+        return raw_model, all_init_params
+
+    @staticmethod
+    def _merge_given_params_with_default(model_type, model_init_params: dict) -> dict:
+        """
+        Merges default params for model_type with params given by a user
+        """
+        all_params = dict(model_init_params)
+        for key, param in inspect.signature(model_type.__init__).parameters.items():
+            if not model_init_params.get(key) and param.default != param.empty:
+                all_params[key] = param.default
+
+        result = {}
+        for key, value in all_params.items():
+            if isinstance(value, _TravaBase._trackable_init_params_types()):
+                result[key] = value
+
+        return result
+
+    @staticmethod
+    def _trackable_init_params_types() -> tuple:
+        """
+        Types for a model's init params that Trava is able to track.
+        """
+        return (
+            numbers.Number,
+            str,
+            bool,
+        )
