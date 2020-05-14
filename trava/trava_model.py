@@ -91,6 +91,9 @@ class TravaModel(ModelInfo):
         return self._model_id
 
     def get_model(self, for_train: bool):
+        if self.raw_model:
+            return self.raw_model
+
         if for_train:
             y_pred = self._y_train_pred
             y_pred_proba = self._y_train_pred_proba
@@ -99,7 +102,7 @@ class TravaModel(ModelInfo):
             y_pred_proba = self._y_test_pred_proba
 
         if y_pred is None:
-            return self._raw_model
+            raise ValueError('y_pred is missing as well as raw model, unexpected behaviour')
 
         return _CachedModel(y_pred=y_pred, y_pred_proba=y_pred_proba)
 

@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from trava.trava_model import TravaModel
+from trava.trava_model import TravaModel, _CachedModel
 
 
 @pytest.fixture(scope='class')
@@ -101,11 +101,9 @@ def test_get_model(mocker, raw_model, X, y, needs_proba):
     raw_model.predict.return_value = y_pred
 
     model.fit(X=X, y=y)
-
-    assert model.get_model(for_train=True) != raw_model
-    assert model.get_model(for_train=False) == raw_model
-
     model.predict(X=X, y=y)
+
+    model.unload_model()
 
     train_cached_model = model.get_model(for_train=True)
     test_cached_model = model.get_model(for_train=False)
@@ -117,18 +115,24 @@ def test_get_model(mocker, raw_model, X, y, needs_proba):
     if needs_proba:
         assert train_cached_model.predict_proba(X) == y_predict_proba
 
-    model.unload_model()
 
-    assert model.get_model(for_train=True) != raw_model
-    assert model.get_model(for_train=False) != raw_model
+@pytest.mark.parametrize("for_train", [True, False], ids=["for_train", "for_test"])
+def test_get_model_unload(mocker, raw_model, for_train):
+    trava_model = TravaModel(raw_model=raw_model, model_id=model_id)
+    trava_model.unload_model()
 
+    with pytest.raises(ValueError):
+        trava_model.get_model(for_train=for_train)
 
-def test_get_model_unload(mocker, raw_model):
-    model = TravaModel(raw_model=raw_model, model_id=model_id)
-    model.unload_model()
+    if for_train:
+        y_pred_key = '_y_train_pred'
+    else:
+        y_pred_key = '_y_test_pred'
 
-    assert not model.get_model(for_train=True)
-    assert not model.get_model(for_train=False)
+    y_pred_mock = mocker.Mock()
+    mocker.patch.object(trava_model, y_pred_key, y_pred_mock)
+
+    assert trava_model.get_model(for_train=for_train).predict(X=None) == y_pred_mock
 
 
 def test_raw_model(mocker, raw_model, model_id):

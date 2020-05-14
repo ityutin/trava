@@ -35,23 +35,34 @@ class SklearnScorer(Scorer):
                 # the last resort. If data and model are unloaded and your metric support interface
                 # like (y_true, y_pred, **kwargs), then you will be able to calculate metrics
 
+                y_cached = model_info.y(for_train=for_train)
+
                 if self._needs_proba:
-                    y_pred_values = model_info.y_pred_proba(for_train=for_train)[:, 1]
+                    y_pred_values = model_info.y_pred_proba(for_train=for_train)
+                    if len(set(y_cached)) == 2:
+                        y_pred_values = y_pred_values[:, 1]
                 else:
                     y_pred_values = model_info.y_pred(for_train=for_train)
 
-                y_cached = model_info.y(for_train=for_train)
                 result = score_func(y_cached, y_pred_values, **metrics_kwargs)
             else:
-                sk_scorer = make_scorer(score_func=score_func,
-                                        greater_is_better=self._greater_is_better,
-                                        needs_proba=self._needs_proba,
-                                        needs_threshold=self._needs_threshold,
-                                        **metrics_kwargs)
+                sk_scorer = self._get_sklearn_scorer(score_func=score_func,
+                                                     **metrics_kwargs)
                 sample_weight = self._sample_weight(X=X, X_raw=X_raw)
-                result = sk_scorer(model, X, y, sample_weight=sample_weight)
+                result = sk_scorer(estimator=model,
+                                   X=X,
+                                   y_true=y,
+                                   sample_weight=sample_weight)
             return result
         return scorer
+
+    def _get_sklearn_scorer(self, score_func: callable, **metrics_kwargs):
+        result = make_scorer(score_func=score_func,
+                             greater_is_better=self._greater_is_better,
+                             needs_proba=self._needs_proba,
+                             needs_threshold=self._needs_threshold,
+                             **metrics_kwargs)
+        return result
 
     @staticmethod
     def _sample_weight(X, X_raw):
