@@ -49,10 +49,7 @@ class SklearnScorer(Scorer):
                 sk_scorer = self._get_sklearn_scorer(score_func=score_func,
                                                      **metrics_kwargs)
                 sample_weight = self._sample_weight(X=X, X_raw=X_raw)
-                result = sk_scorer(estimator=model,
-                                   X=X,
-                                   y_true=y,
-                                   sample_weight=sample_weight)
+                result = sk_scorer(model, X, y, sample_weight=sample_weight)
             return result
         return scorer
 

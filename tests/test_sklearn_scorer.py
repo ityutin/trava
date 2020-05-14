@@ -70,10 +70,7 @@ def test_model_data_present(mocker,
         raw_model = train_raw_model
     else:
         raw_model = test_raw_model
-    sklearn_scorer.assert_called_with(estimator=raw_model,
-                                      X=X,
-                                      y_true=y,
-                                      sample_weight=sample_weight)
+    sklearn_scorer.assert_called_with(raw_model, X, y, sample_weight=sample_weight)
 
 
 @pytest.mark.parametrize("needs_proba", [True, False], ids=['proba', 'no_proba'])
