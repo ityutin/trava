@@ -20,7 +20,7 @@ You tell what metrics you want to calculate and how results should be presented 
 Note: See examples/Basics.ipynb for the intro tour.
 
 
-```
+```python
 # what metrics to calculate. sk(...) means wrapper for sklearn metrics, custom metrics are easily supported as well.
 scorers = [sk(recall_score), sk(precision_score)]
 
