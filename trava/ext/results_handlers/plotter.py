@@ -1,7 +1,9 @@
 import random
 import matplotlib.pyplot as plt
 from typing import List, Tuple, Callable, Any
+from dataclasses import dataclass
 
+from trava.ext.results_handlers.scorer_plotter import ScorerPlotter
 from trava.logger import TravaLogger
 from trava.metric import Metric
 from trava.model_results import ModelResult
@@ -10,25 +12,27 @@ from trava.scorer import Scorer
 from trava.trava_tracker import Tracker
 
 
+@dataclass
+class PlotItem:
+    scorer: Scorer
+    plotter: ScorerPlotter
+    can_overlap: bool
+
+
 class PlotHandler(ResultsHandler):
     """
     Plots metrics.
     """
-    def __init__(self, scorers: List[Scorer], plot_funcs: List[callable]):
+    def __init__(self, plot_items: List[PlotItem]):
         """
         Parameters
         ----------
-        scorers: list
-            Scorers for metrics you want to plot.
-        plot_funcs:
-            Actual plot functions for metrics. Must be in order according to scorers.
-            One scorer - one plot function.
+        plot_items: list of PlotItem
+            Each item in the list describes what & how to plot
         """
-        assert len(scorers) == len(plot_funcs), "provide plot_func for each scorer"
+        super().__init__(scorers=[item.scorer for item in plot_items])
 
-        super().__init__(scorers)
-
-        self._plot_funcs = plot_funcs
+        self._plot_items = plot_items
 
     def handle(self, results: List[ModelResult], logger: TravaLogger, tracker: Tracker):
         self._show(results=results, logger=logger, tracker=tracker)
@@ -101,7 +105,9 @@ class PlotHandler(ResultsHandler):
                           tracker: Tracker,
                           model_id: str = None):
         if show:
-            self._show_metrics_set(metrics_set=metrics_set, label=label, tracker=tracker)
+            self._show_metrics_set(metrics_set=metrics_set,
+                                   label=label,
+                                   tracker=tracker)
         else:
             self._track_metrics_set(metrics_set=metrics_set,
                                     label=label,
@@ -116,7 +122,7 @@ class PlotHandler(ResultsHandler):
         fig, ax = self._fig_ax()
         for plot_idx, (metrics, plot_func) in self._enumerated_metrics_plots(metrics_set=metrics_set):
             self._plot_metrics(metrics=metrics,
-                               plot_func=plot_func,
+                               plot_item=plot_func,
                                label=label,
                                tracker=tracker,
                                show=True,
@@ -130,13 +136,13 @@ class PlotHandler(ResultsHandler):
                            tracker: Tracker,
                            use_one_figure: bool,
                            model_id: str = None):
-        fig, ax = None, None
-        if use_one_figure:
-            fig, ax = self._fig_ax()
+        for plot_idx, (metrics, plot_item) in self._enumerated_metrics_plots(metrics_set=metrics_set):
+            fig, ax = None, None
+            if use_one_figure:
+                fig, ax = self._fig_ax()
 
-        for plot_idx, (metrics, plot_func) in self._enumerated_metrics_plots(metrics_set=metrics_set):
             self._plot_metrics(metrics=metrics,
-                               plot_func=plot_func,
+                               plot_item=plot_item,
                                label=label,
                                tracker=tracker,
                                show=False,
@@ -147,7 +153,7 @@ class PlotHandler(ResultsHandler):
 
     def _plot_metrics(self,
                       metrics: Tuple[Metric],
-                      plot_func: callable,
+                      plot_item: PlotItem,
                       label: str,
                       tracker: Tracker,
                       show: bool,
@@ -155,6 +161,10 @@ class PlotHandler(ResultsHandler):
                       model_id: str = None,
                       fig=None,
                       ax=None):
+        if model_id and not plot_item.can_overlap:
+            # if plots for many models can't overlap - we don't even need to try
+            return
+
         def color_for(idx):
             r = lambda: random.randint(0, 255)
             base_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
@@ -163,6 +173,8 @@ class PlotHandler(ResultsHandler):
 
             return base_colors[idx]
 
+        use_one_figure = use_one_figure and plot_item.can_overlap
+
         if use_one_figure:
             fig, ax = self._fig_ax(existing_fig=fig)
 
@@ -170,7 +182,7 @@ class PlotHandler(ResultsHandler):
             if not use_one_figure:
                 fig, ax = self._fig_ax(existing_fig=fig)
 
-            plot_func(metric=metric, fig=fig, ax=ax, color=color_for(idx=metric_idx), label=label)
+            plot_item.plotter.plot(metric=metric, fig=fig, ax=ax, color=color_for(idx=metric_idx), label=label)
             if not show:
                 filename = (label + '_' + metric.name).lower()
                 tracker.track_plot(model_id=model_id or metric.model_id,
@@ -183,7 +195,7 @@ class PlotHandler(ResultsHandler):
             plt.close(fig)
 
     def _enumerated_metrics_plots(self, metrics_set: List[Tuple[Metric]]):
-        return enumerate(zip(metrics_set, self._plot_funcs))
+        return enumerate(zip(metrics_set, self._plot_items))
 
     @staticmethod
     def _fig_ax(existing_fig=None) -> tuple:

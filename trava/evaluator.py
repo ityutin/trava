@@ -123,6 +123,7 @@ class Evaluator:
         Calculates metrics using the saved scorers providers
         """
         result = {}
+        metrics_cache = {}
 
         if self._fit_split_data is None:
             X = None
@@ -143,13 +144,22 @@ class Evaluator:
             else:
                 scorers = provider.other_scorers()
 
-            metrics = [self._get_metric(X=X,
-                                        X_raw=X_raw,
-                                        y=y,
-                                        for_train=for_train,
-                                        scorer=scorer) for scorer in scorers]
+            provider_metrics = []
+            for scorer in scorers:
+                if metrics_cache.get(scorer.func_name):
+                    provider_metrics.append(metrics_cache[scorer.func_name])
+                    continue
 
-            result[provider.provider_id] = metrics
+                metric = self._get_metric(X=X,
+                                          X_raw=X_raw,
+                                          y=y,
+                                          for_train=for_train,
+                                          scorer=scorer)
+                metrics_cache[scorer.func_name] = metric
+
+                provider_metrics.append(metric)
+
+            result[provider.provider_id] = provider_metrics
 
         return result
 

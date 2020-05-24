@@ -6,6 +6,7 @@ from copy import copy
 
 from typing import List
 
+from tests.objects_for_tests import TestScorer
 from trava.evaluator import Evaluator
 from trava.split.result import SplitResult
 
@@ -190,3 +191,38 @@ def test_unload_data():
 
     assert not evaluator.fit_split_data
     assert not evaluator.raw_split_data
+
+
+def test_metrics_caching(mocker, model, model_id, split_result):
+    raw_split_result = copy(split_result)
+    evaluator = _evaluator(model=model,
+                           split_result=split_result,
+                           raw_split_result=raw_split_result)
+
+    scorer_name = 'test_scorer_name'
+    scorers_provider = mocker.MagicMock()
+
+    scorer_1 = mocker.Mock()
+    scorer_1.func_name = scorer_name
+
+    scorer_2 = mocker.Mock()
+    scorer_2.func_name = scorer_name
+
+    scorer_3 = mocker.Mock()
+    scorer_3.func_name = 'another_scorer'
+
+    scorers = [
+        scorer_1,
+        scorer_2,
+        scorer_3,
+    ]
+
+    scorers_provider.metric_scorers.return_value = scorers
+    scorers_provider.other_scorers.return_value = []
+
+    evaluator.evaluate(scorers_providers=[scorers_provider])
+
+    scorer_1.assert_called()
+    scorer_2.assert_not_called()
+    scorer_3.assert_called()
+
