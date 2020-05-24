@@ -129,6 +129,8 @@ Also supported tracking of:
 - cross-validation case with nested tracking
 - eval results for common boosting libraries ( **XGBoost**, **LightGBM**, **CatBoost** )
 
+Checkout a detailed notebooks how to [track metrics & parameters](https://github.com/ityutin/trava/blob/master/examples/MLFlow_basic.ipynb) and [plots & serialized models](https://github.com/ityutin/trava/blob/master/examples/MLFlow_advanced.ipynb).
+
 # General information
 
 - highly customizable training & evaluation processes ( see **trava.fit_predictor.py.FitPredictor** class and its subclasses )
