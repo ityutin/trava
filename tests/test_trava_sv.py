@@ -627,12 +627,3 @@ def test_create_raw_model(mocker, trava):
 
     assert isinstance(model, model_type)
     assert result_init_params == test_init_params
-
-
-def test_allowed_init_params_types():
-    test_init_params_types = (
-        numbers.Number,
-        str,
-        bool,
-    )
-    assert TravaSV._trackable_init_params_types() == test_init_params_types

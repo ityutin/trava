@@ -7,6 +7,7 @@ from trava.metric import Metric
 from trava.model_serializer import ModelSerializer
 from trava.scorer import Scorer
 from trava.trava_tracker import TravaTracker
+from trava.utils.model_params_filter import filter_params
 
 
 class _RunInfo:
@@ -60,10 +61,12 @@ class MLFlowTracker(TravaTracker):
         mlflow.log_params(params)
 
     def _track_fit_params(self, model_id: str, params: dict):
-        super()._track_fit_params(model_id, params)
+        prepared_fit_params = self._prepare_params(params=params, key_prefix='fit_param')
+        mlflow.log_params(prepared_fit_params)
 
     def _track_predict_params(self, model_id: str, params: dict):
-        super()._track_predict_params(model_id, params)
+        prepared_predict_params = self._prepare_params(params=params, key_prefix='predict_param')
+        mlflow.log_params(prepared_predict_params)
 
     def _track_metric_value(self, model_id: str, name: str, value, step=None):
         mlflow.log_metric(name, value, step=step)
@@ -80,3 +83,11 @@ class MLFlowTracker(TravaTracker):
     def _save_run_id(self, run_name: str, model_id: str):
         run_id = mlflow.active_run().info.run_id
         self._model_id_run_info_map[model_id] = _RunInfo(run_id=run_id, run_name=run_name)
+
+    def _prepare_params(self, params: dict, key_prefix: str) -> dict:
+        filtered_params = filter_params(params=params)
+
+        for key in list(filtered_params.keys()):
+            filtered_params[f'{key_prefix}__{key}'] = filtered_params.pop(key)
+
+        return filtered_params

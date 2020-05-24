@@ -14,6 +14,16 @@ from trava.trava_tracker import Tracker
 
 @dataclass
 class PlotItem:
+    """
+    scorer: Scorer
+        How to calculate the metric we want to visualize
+    plotter: ScorerPlotter
+        How to visualize it
+    can_overlap: bool
+        If it's okay to use one canvas for drawing metrics for many models.
+        e.g. ROC AUC plot is a good example when we can compare many models on the same graph,
+             But Confusion matrix can be used only separately
+    """
     scorer: Scorer
     plotter: ScorerPlotter
     can_overlap: bool

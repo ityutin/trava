@@ -1,11 +1,5 @@
-from typing import List
-
-from sklearn.pipeline import Pipeline
-
 from trava.ext.boosting_eval.boosting_logic import CommonBoostingEvalLogic
-from trava.fit_predictor import FitPredictConfig, FitPredictConfigUpdateStep, FinalHandlerStep, FitPredictor, \
-    RawModelUpdateStep, FitPredictorSteps
-from trava.logger import TravaLogger
+from trava.fit_predictor import FitPredictConfig, FitPredictConfigUpdateStep, FinalHandlerStep, FitPredictorSteps
 from trava.tracker import Tracker
 from trava.trava_model import TravaModel
 from trava.split.result import SplitResult
@@ -67,8 +61,12 @@ class EvalFinalStep(FinalHandlerStep):
         self._eval_logic = eval_logic
 
     def handle(self, trava_model: TravaModel, config: FitPredictConfig, tracker: Tracker):
-        self._eval_logic.plot_if_needed(model_id=trava_model.model_id, model=trava_model.raw_model, tracker=tracker)
-        self._eval_logic.track_eval_metrics(model_id=trava_model.model_id, model=trava_model.raw_model, tracker=tracker)
+        self._eval_logic.plot_if_needed(model_id=trava_model.model_id,
+                                        model=trava_model.raw_model,
+                                        tracker=tracker)
+        self._eval_logic.track_eval_metrics(model_id=trava_model.model_id,
+                                            model=trava_model.raw_model,
+                                            tracker=tracker)
 
 
 class EvalFitSteps(FitPredictorSteps):
