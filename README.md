@@ -1,4 +1,4 @@
-[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-360/) [![CodeFactor](https://www.codefactor.io/repository/github/ityutin/trava/badge)](https://www.codefactor.io/repository/github/ityutin/trava) <a href="https://codeclimate.com/github/ityutin/trava/maintainability"><img src="https://api.codeclimate.com/v1/badges/7198080c24ab23f3e113/maintainability" /></a>
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-360/) [![CodeFactor](https://www.codefactor.io/repository/github/ityutin/trava/badge)](https://www.codefactor.io/repository/github/ityutin/trava) <a href="https://codeclimate.com/github/ityutin/trava/maintainability"><img src="https://api.codeclimate.com/v1/badges/7198080c24ab23f3e113/maintainability" /></a> [![codecov](https://codecov.io/gh/ityutin/trava/branch/master/graph/badge.svg)](https://codecov.io/gh/ityutin/trava)
 
 # 🌿 Trava ( initially stands for TrainValidation )
 Framework that helps to train models, compare them and track parameters&metrics along the way. Works with tabular data only.
