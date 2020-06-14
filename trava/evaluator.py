@@ -28,9 +28,9 @@ class Evaluator:
         self._fit_split_data = fit_split_data
         self._raw_split_data = raw_split_data
 
-        self._train_metrics = {}
-        self._test_metrics = {}
-        self._other_metrics = {}
+        self._train_metrics: Dict[str, List[Metric]] = {}
+        self._test_metrics: Dict[str, List[Metric]] = {}
+        self._other_metrics: Dict[str, List[Metric]] = {}
 
     @property
     def model_id(self) -> str:
@@ -123,7 +123,7 @@ class Evaluator:
         Calculates metrics using the saved scorers providers
         """
         result = {}
-        metrics_cache = {}
+        metrics_cache: Dict[str, Metric] = {}
 
         if self._fit_split_data is None:
             X = None

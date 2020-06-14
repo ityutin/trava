@@ -20,7 +20,6 @@ def test_equality(mocker, model, model_id):
     scorers_providers = mocker.MagicMock()
     serializer = mocker.Mock()
     split_result = mocker.Mock()
-    raw_dataset = mocker.Mock()
     fit_params = {'c': 3, 'd': 4}
     predict_params = {'_': 11, '+': 43}
     description = 'descr'
@@ -31,7 +30,6 @@ def test_equality(mocker, model, model_id):
                                     scorers_providers=scorers_providers,
                                     serializer=serializer,
                                     raw_split_data=split_result,
-                                    raw_dataset=raw_dataset,
                                     fit_params=fit_params,
                                     predict_params=predict_params,
                                     description=description)
@@ -42,7 +40,6 @@ def test_equality(mocker, model, model_id):
                                      scorers_providers=scorers_providers,
                                      serializer=serializer,
                                      raw_split_data=split_result,
-                                     raw_dataset=raw_dataset,
                                      fit_params=fit_params,
                                      predict_params=predict_params,
                                      description=description)

@@ -6,7 +6,6 @@ from trava.logger import TravaLogger
 from trava.model_serializer import ModelSerializer
 from trava.trava_model import TravaModel
 from trava.model_results import ModelResult
-from trava.raw_dataset import RawDataset
 from trava.scorers_provider import ScorersProvider
 from trava.split.result import SplitResult
 from trava.tracker import Tracker
@@ -24,19 +23,15 @@ class FitPredictConfig:
                  scorers_providers: List[ScorersProvider],
                  serializer: Optional[ModelSerializer],
                  raw_split_data: Optional[SplitResult] = None,
-                 raw_dataset: Optional[RawDataset] = None,
                  fit_params: dict = None,
                  predict_params: dict = None,
                  description: Optional[str] = None):
-        assert raw_split_data or raw_dataset, "Provide either split result or raw_dataset"
-
         self.raw_model = raw_model
-        self.model_init_params = model_init_params
+        self.model_init_params = model_init_params or {}
         self.model_id = model_id
         self.scorers_providers = scorers_providers
         self.serializer = serializer
         self.raw_split_data = raw_split_data
-        self.raw_dataset = raw_dataset
         self.fit_params = fit_params or {}
         self.predict_params = predict_params or {}
         self.description = description
@@ -51,20 +46,19 @@ class FitPredictConfig:
         scorers_providers_check = self.scorers_providers == other.scorers_providers
         serializer_check = self.serializer == other.serializer
         raw_split_data_check = self.raw_split_data == other.raw_split_data
-        raw_dataset_check = self.raw_dataset == other.raw_dataset
         fit_params_check = self.fit_params == other.fit_params
         predict_params_check = self.predict_params == other.predict_params
         description_check = self.description == other.description
+
         result = model_check \
                  and init_params_check \
                  and model_id_check \
                  and scorers_providers_check \
                  and serializer_check \
                  and raw_split_data_check \
-                 and raw_dataset_check \
                  and fit_params_check \
                  and predict_params_check \
-                 and description_check
+                 and description_check  # noqa: E127
 
         return result
 
@@ -77,7 +71,7 @@ class RawModelUpdateStep(ABC):
     def update_model(self, raw_model, config: FitPredictConfig):
         """
         Updates the given raw model.
-        
+
         Parameters
         ----------
         raw_model: sklearn-style model
@@ -226,7 +220,7 @@ class FitPredictor(ABC):
 
         self._logger = logger or TravaLogger()
 
-    def fit_predict(self, config: FitPredictConfig, tracker: Tracker) -> [Evaluator]:
+    def fit_predict(self, config: FitPredictConfig, tracker: Tracker) -> List[Evaluator]:
         """
         Prepares the data, performs one or many fit&predict, evaluates the results, tracks everything along the way.
 
@@ -268,6 +262,7 @@ class FitPredictor(ABC):
             # now fitting the model as many times as subclass wants
             model_id = trava_model.model_id
             split_result_fit = model_config.raw_split_data
+            assert split_result_fit
 
             # here we start tracking one of the real fits.
             self._start_tracking(config=config,

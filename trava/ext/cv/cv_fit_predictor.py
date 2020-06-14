@@ -1,5 +1,7 @@
 from typing import List, Tuple
 
+from trava.raw_dataset import RawDataset
+
 from trava.ext.cv.base import CV
 from trava.fit_predictor import FitPredictor, FitPredictConfig, FitPredictorSteps
 from trava.logger import TravaLogger
@@ -10,6 +12,7 @@ from trava.split.result import SplitResult
 class CVFitPredictor(FitPredictor):
     def __init__(self,
                  cv: CV,
+                 raw_dataset: RawDataset,
                  ignore_cols: List[str],
                  groups=None,
                  steps: FitPredictorSteps = None,
@@ -18,14 +21,15 @@ class CVFitPredictor(FitPredictor):
                          logger=logger)
 
         self._cv = cv
+        self._raw_dataset = raw_dataset
         self._groups = groups
         self._ignore_cols = ignore_cols
 
     def _models_configs(self, raw_model, config: FitPredictConfig) -> List[Tuple[TravaModel, FitPredictConfig]]:
         result = []
 
-        X = config.raw_dataset.X
-        y = config.raw_dataset.y
+        X = self._raw_dataset.X
+        y = self._raw_dataset.y
         X_cleaned = X.drop(self._ignore_cols, axis=1)
 
         for fold_idx, (train_indices, test_indices) in enumerate(self._cv.split(X=X_cleaned, y=y, groups=self._groups)):

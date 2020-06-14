@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Callable
 
 from trava.trava_model import TravaModel
 from trava.model_info import ModelInfo
@@ -29,7 +29,7 @@ class Scorer(ABC):
         Any additional parameters to pass to score_func
     """
     def __init__(self,
-                 score_func: callable,
+                 score_func: Callable,
                  needs_proba=False,
                  requires_raw_model=False,
                  requires_X_y=False,
@@ -48,7 +48,7 @@ class Scorer(ABC):
         return self._is_other_scorer
 
     @abstractmethod
-    def _make_scorer(self, score_func: callable, **metrics_kwargs) -> callable:
+    def _make_scorer(self, score_func: Callable, **metrics_kwargs) -> Callable:
         """
         Creates a function that calls score_func with provided true labels and predictions.
         """
@@ -81,7 +81,7 @@ class OtherScorer(Scorer):
     You may calculate any custom value you want based on model/input data etc.
     Such metrics are separated from a model's performance metrics.
     """
-    def _make_scorer(self, score_func: callable, **metrics_kwargs) -> callable:
+    def _make_scorer(self, score_func: Callable, **metrics_kwargs) -> Callable:
         def scorer(model, model_info: ModelInfo, for_train: bool, X, X_raw, y):
             return score_func(model=model,
                               model_info=model_info,

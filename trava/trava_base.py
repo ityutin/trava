@@ -1,12 +1,10 @@
-import inspect
-import numbers
 from abc import ABC
-from typing import Optional, List
+from typing import Optional, List, Any, Dict
 
 from trava.logger import TravaLogger
 from trava.model_results import ModelResult
 from trava.results_handler import ResultsHandler
-from trava.trava_tracker import Tracker, TravaTracker
+from trava.trava_tracker import TravaTracker
 from trava.utils.model_params_filter import merge_given_params_with_default
 
 
@@ -28,16 +26,13 @@ class _TravaBase(ABC):
     """
     def __init__(self,
                  logger: Optional[TravaLogger] = None,
-                 tracker: Optional[Tracker] = None,
+                 tracker: Optional[TravaTracker] = None,
                  results_handlers: List[ResultsHandler] = None):
         self._logger = logger or TravaLogger()
-        self._tracker = tracker or TravaTracker(scorers=[])
-        self._results_handlers = results_handlers
+        self._tracker: TravaTracker = tracker or TravaTracker(scorers=[])
+        self._results_handlers = results_handlers or []
 
-        if results_handlers is None:
-            self._results_handlers = []
-
-        self._results = {}
+        self._results: Dict[str, ModelResult] = {}
 
     @property
     def results(self) -> list:
@@ -49,9 +44,12 @@ class _TravaBase(ABC):
         -------
         List of outputs for every results handler that returns not None result
         """
-        return self._results_for(results=list(self._results.values()), results_handlers=self._results_handlers)
+        all_model_results = list(self._results.values())
+        return self._results_for(results=all_model_results, results_handlers=self._results_handlers)
 
-    def _results_for(self, results: List[ModelResult], results_handlers: List[ResultsHandler]) -> list:
+    def _results_for(self,
+                     results: List[ModelResult],
+                     results_handlers: List[ResultsHandler]) -> list:
         """
         Applies all the handlers and returns their result
 
@@ -67,7 +65,7 @@ class _TravaBase(ABC):
 
         return result
 
-    def raw_models_for(self, model_id: str) -> Optional[list]:
+    def raw_models_for(self, model_id: str) -> Optional[Dict[str, Any]]:
         """
         Get raw models associated with the given model_id
 

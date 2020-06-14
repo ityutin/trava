@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple, Iterator
 import numpy as np
 
 from trava.evaluator import Evaluator
@@ -49,7 +49,7 @@ class ModelResult:
         return dict([(evaluator.model_id, evaluator.trava_model.raw_model) for evaluator in self._evaluators])
 
     @property
-    def evaluators(self) -> Optional[List[Evaluator]]:
+    def evaluators(self) -> List[Evaluator]:
         """
         Gets all the evaluators provided
 
@@ -120,12 +120,14 @@ class ModelResult:
 
         result = []
 
-        for metrics in zip(*metrics):
-            first_metric = metrics[0]
+        zipped_all_metrics: Iterator[Tuple[Metric, ...]] = zip(*metrics)
+        for zipped_metrics in zipped_all_metrics:
+            first_metric: Metric = zipped_metrics[0]
+
             if not first_metric.is_scalar:
                 continue
 
-            mean_value = np.mean([metric.value for metric in metrics])
+            mean_value = np.mean([metric.value for metric in zipped_metrics])
 
             mean_metric = type(first_metric)(name=first_metric.name,
                                              value=mean_value,

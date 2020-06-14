@@ -1,6 +1,6 @@
 import random
 import matplotlib.pyplot as plt
-from typing import List, Tuple, Callable, Any
+from typing import List, Tuple
 from dataclasses import dataclass
 
 from trava.ext.results_handlers.scorer_plotter import ScorerPlotter
@@ -61,8 +61,8 @@ class PlotHandler(ResultsHandler):
               tracker: Tracker,
               use_one_figure: bool = False,
               model_id: str = None):
-        all_train_metrics = []
-        all_test_metrics = []
+        all_train_metrics: List[List[Metric]] = []
+        all_test_metrics: List[List[Metric]] = []
         for model_result in results:
             if not model_result.is_one_fit_result:
                 if show:
@@ -93,14 +93,18 @@ class PlotHandler(ResultsHandler):
             all_test_metrics.append(model_test_metrics)
 
         if len(all_train_metrics) > 0:
-            self._plot_metrics_set(metrics_set=list(zip(*all_train_metrics)),
+            # TODO: couldn't figure out how to fix this, postponed it
+            train_metrics_set: List[Tuple[Metric]] = list(zip(*all_train_metrics))  # type: ignore
+            self._plot_metrics_set(metrics_set=train_metrics_set,
                                    label='Train',
                                    show=show,
                                    use_one_figure=use_one_figure,
                                    tracker=tracker,
                                    model_id=model_id)
 
-        self._plot_metrics_set(metrics_set=list(zip(*all_test_metrics)),
+        # TODO: couldn't figure out how to fix this, postponed it
+        test_metrics_set: List[Tuple[Metric]] = list(zip(*all_test_metrics))  # type: ignore
+        self._plot_metrics_set(metrics_set=test_metrics_set,
                                label='Test',
                                show=show,
                                use_one_figure=use_one_figure,
@@ -171,10 +175,6 @@ class PlotHandler(ResultsHandler):
                       model_id: str = None,
                       fig=None,
                       ax=None):
-        if model_id and not plot_item.can_overlap:
-            # if plots for many models can't overlap - we don't even need to try
-            return
-
         def color_for(idx):
             r = lambda: random.randint(0, 255)
             base_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
@@ -193,15 +193,20 @@ class PlotHandler(ResultsHandler):
                 fig, ax = self._fig_ax(existing_fig=fig)
 
             plot_item.plotter.plot(metric=metric, fig=fig, ax=ax, color=color_for(idx=metric_idx), label=label)
+            if show and not use_one_figure:
+                fig.show()
+
             if not show:
                 filename = (label + '_' + metric.name).lower()
                 tracker.track_plot(model_id=model_id or metric.model_id,
                                    fig=fig,
                                    filename=filename)
+                plt.close(fig)
 
-        if show:
+        if show and use_one_figure:
             fig.show()
-        else:
+
+        if fig:
             plt.close(fig)
 
     def _enumerated_metrics_plots(self, metrics_set: List[Tuple[Metric]]):

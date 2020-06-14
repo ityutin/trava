@@ -1,7 +1,6 @@
 from typing import Tuple, List
 
-from trava.fit_predictor import FitPredictConfig, FitPredictor, RawModelUpdateStep, FitPredictConfigUpdateStep, \
-    FinalHandlerStep, FitPredictorSteps
+from trava.fit_predictor import FitPredictConfig, FitPredictor, FitPredictorSteps
 from trava.logger import TravaLogger
 from trava.trava_model import TravaModel
 from trava.split.result import SplitResult
@@ -38,7 +37,10 @@ class TrainOnOneTestOnOneFitPredictor(GroupAnalysisFitPredictor):
     Trains model on each group's subset as well as gets predictions using that subset.
     """
     def _models_configs(self, raw_model, config: FitPredictConfig) -> List[Tuple[TravaModel, FitPredictConfig]]:
-        unique_groups = sorted(set(config.raw_split_data.X_train[self._group_col_name].values))
+        split_result = config.raw_split_data
+        assert split_result
+
+        unique_groups = sorted(set(split_result.X_train[self._group_col_name].values))
 
         result = []
         for group in unique_groups:
@@ -52,6 +54,7 @@ class TrainOnOneTestOnOneFitPredictor(GroupAnalysisFitPredictor):
 
     def _config_for_group(self, group, config: FitPredictConfig) -> FitPredictConfig:
         split_result = config.raw_split_data
+        assert split_result
 
         group_X_train, group_y_train = self._group_X_y(group=group, X=split_result.X_train, y=split_result.y_train)
         group_X_test, group_y_test = self._group_X_y(group=group, X=split_result.X_test, y=split_result.y_test)
@@ -82,11 +85,14 @@ class TrainOnAllTestOnOneFitPredictor(GroupAnalysisFitPredictor):
     """
     def __init__(self, group_col_name: str, logger: TravaLogger = None):
         super().__init__(group_col_name=group_col_name, logger=logger)
-
+        print('')
         self._model = None
 
     def _models_configs(self, raw_model, config: FitPredictConfig) -> List[Tuple[TravaModel, FitPredictConfig]]:
-        unique_groups = sorted(set(config.raw_split_data.X_train[self._group_col_name].values))
+        split_result = config.raw_split_data
+        assert split_result
+
+        unique_groups = sorted(set(split_result.X_train[self._group_col_name].values))
 
         result = []
         main_model = None
@@ -104,15 +110,18 @@ class TrainOnAllTestOnOneFitPredictor(GroupAnalysisFitPredictor):
         return result
 
     def _config_for_group(self, group, config: FitPredictConfig) -> FitPredictConfig:
-        group_X_test, group_y_test = self._group_X_y(group=group,
-                                                     X=config.raw_split_data.X_test,
-                                                     y=config.raw_split_data.y_test)
-        group_X_valid, group_y_valid = self._group_X_y(group=group,
-                                                       X=config.raw_split_data.X_valid,
-                                                       y=config.raw_split_data.y_valid)
+        split_result = config.raw_split_data
+        assert split_result
 
-        group_split_result = SplitResult(X_train=config.raw_split_data.X_train.drop(self._group_col_name, axis=1),
-                                         y_train=config.raw_split_data.y_train,
+        group_X_test, group_y_test = self._group_X_y(group=group,
+                                                     X=split_result.X_test,
+                                                     y=split_result.y_test)
+        group_X_valid, group_y_valid = self._group_X_y(group=group,
+                                                       X=split_result.X_valid,
+                                                       y=split_result.y_valid)
+
+        group_split_result = SplitResult(X_train=split_result.X_train.drop(self._group_col_name, axis=1),
+                                         y_train=split_result.y_train,
                                          X_test=group_X_test,
                                          y_test=group_y_test,
                                          X_valid=group_X_valid,

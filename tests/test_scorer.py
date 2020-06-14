@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict, Any
 
 import pytest
 
@@ -141,7 +141,7 @@ def test_make_scorer(mocker, score_func):
         def __init__(self, score_func: callable, needs_proba=False, requires_raw_model=False,
                      requires_X_y=False, name: Optional[str] = None, **metrics_kwargs):
             self._make_scorer_score_func = None
-            self._make_scorer_metrics_kwargs = None
+            self._make_scorer_metrics_kwargs: Dict[str, Any] = {}
             super().__init__(score_func, needs_proba, requires_raw_model, requires_X_y, name, **metrics_kwargs)
 
         def _make_scorer(self, score_func: callable, **metrics_kwargs) -> callable:
@@ -158,5 +158,3 @@ def test_make_scorer(mocker, score_func):
 
     assert scorer._make_scorer_score_func == score_func
     assert scorer._make_scorer_metrics_kwargs == kwargs
-
-

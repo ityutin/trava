@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from tempfile import mkdtemp
 from shutil import rmtree
 from functools import wraps
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from trava.logger import TravaLogger
 from trava.metric import Metric
@@ -40,7 +40,7 @@ class TravaTracker(Tracker, ResultsHandler):
         super().__init__(scorers=scorers)
 
         self._enabled = True
-        self._started_models = {}
+        self._started_models: Dict[str, bool] = {}
 
     def add_scorers(self, scorers: List[Scorer]):
         self._scorers += scorers
@@ -121,7 +121,7 @@ class TravaTracker(Tracker, ResultsHandler):
         """
         Just an abstract method to track anything you want
         """
-        self._track(model_id=model_id, *args, **kwargs)
+        self._track(model_id=model_id, *args, **kwargs)  # type: ignore
 
     @track_if_enabled
     def track_plot(self, model_id: str, fig, filename: str):
@@ -200,4 +200,3 @@ class TravaTracker(Tracker, ResultsHandler):
         pass
 
     ###
-

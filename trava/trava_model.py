@@ -1,5 +1,5 @@
 from time import time
-from typing import Optional, Any
+from typing import Optional, Any, Dict
 
 import numpy as np
 import pandas as pd
@@ -60,10 +60,10 @@ class TravaModel(ModelInfo):
         self._y_test_pred = None
         self._y_test_pred_proba = None
 
-        self._fit_params = None
-        self._predict_params = None
-        self._fit_time = None
-        self._predict_time = None
+        self._fit_params: Dict[str, Any] = {}
+        self._predict_params: Dict[str, Any] = {}
+        self._fit_time: Optional[float] = None
+        self._predict_time: Optional[float] = None
 
     def copy(self, model_id: str):
         """
@@ -115,11 +115,11 @@ class TravaModel(ModelInfo):
         return self._fit_params
 
     @property
-    def fit_time(self) -> Optional[int]:
+    def fit_time(self) -> Optional[float]:
         return self._fit_time
 
     @property
-    def predict_time(self) -> Optional[int]:
+    def predict_time(self) -> Optional[float]:
         return self._predict_time
 
     @property

@@ -1,5 +1,4 @@
 import pytest
-import numbers
 import numpy as np
 import pandas as pd
 
@@ -163,6 +162,7 @@ def _fit_with_n_evaluators(mocker,
                            trava,
                            n_evaluators,
                            test_result_handlers,
+                           only_calculate_metrics: bool = False,
                            keep_data_in_memory: bool = True,
                            mock_evaluators: bool = True):
     evaluators = []
@@ -189,6 +189,7 @@ def _fit_with_n_evaluators(mocker,
                       model_id=main_model_id if n_evaluators > 1 else model_id,
                       model_type=model_type,
                       fit_predictor=fit_predictor,
+                      only_calculate_metrics=only_calculate_metrics,
                       keep_data_in_memory=keep_data_in_memory)
     return evaluators
 
@@ -226,7 +227,6 @@ def test_fit_predictor(mocker,
     predict_params = {'c': 3, 'd': 4}
     description = 'test_description'
     trava.fit_predict(raw_split_data=split_result,
-                      raw_dataset=raw_dataset,
                       model_id=model_id,
                       model_type=model_type,
                       description=description,
@@ -240,7 +240,6 @@ def test_fit_predictor(mocker,
     fit_predictor.fit_predict.assert_called_once()
 
     test_fit_config = FitPredictConfig(raw_split_data=split_result,
-                                       raw_dataset=raw_dataset,
                                        raw_model=raw_model,
                                        model_init_params=model_init_params,
                                        model_id=model_id,
@@ -627,3 +626,29 @@ def test_create_raw_model(mocker, trava):
 
     assert isinstance(model, model_type)
     assert result_init_params == test_init_params
+
+
+@pytest.mark.parametrize("n_evaluators", [1, 3])
+def test_only_calculate_metrics(mocker,
+                                model_id,
+                                main_model_id,
+                                model_type,
+                                trava_model,
+                                split_result,
+                                n_evaluators):
+    results_handler = mocker.Mock()
+    results_handlers = [results_handler]
+    trava = TravaSV(results_handlers=results_handlers, tracker=trava_tracker)
+    _fit_with_n_evaluators(mocker=mocker,
+                           trava_model=trava_model,
+                           model_id=model_id,
+                           main_model_id=main_model_id,
+                           model_type=model_type,
+                           split_result=split_result,
+                           trava=trava,
+                           n_evaluators=n_evaluators,
+                           only_calculate_metrics=True,
+                           test_result_handlers=results_handlers,
+                           keep_data_in_memory=True)
+
+    results_handler.handle.assert_not_called()

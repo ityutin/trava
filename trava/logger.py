@@ -12,4 +12,3 @@ class TravaLogger:
     def log(self, msg: str, level=INFO):
         if self._logger:
             self._logger.log(msg=msg, level=level)
-

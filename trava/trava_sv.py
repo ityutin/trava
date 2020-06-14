@@ -1,11 +1,11 @@
 import copy
-from typing import Optional, List
+from typing import Optional, List, Type
 
+from trava.scorers_provider import ScorersProvider
 from trava.evaluator import Evaluator
 from trava.fit_predictor import FitPredictor, FitPredictConfig
 from trava.model_results import ModelResult
 from trava.model_serializer import ModelSerializer
-from trava.raw_dataset import RawDataset
 from trava.results_handler import ResultsHandler
 from trava.scorer import Scorer
 from trava.split.result import SplitResult
@@ -20,14 +20,14 @@ class TravaSV(_TravaBase):
     """
     def fit_predict(self,
                     model_id: str,
-                    model_type: Optional[type],
+                    model_type: Type,
                     description: Optional[str] = None,
                     model_init_params: Optional[dict] = None,
                     raw_split_data: Optional[SplitResult] = None,
-                    raw_dataset: Optional[RawDataset] = None,
                     fit_predictor: FitPredictor = None,
                     fit_params: dict = None,
                     predict_params: dict = None,
+                    only_calculate_metrics: bool = False,
                     keep_models_in_memory: bool = True,
                     keep_data_in_memory: bool = True,
                     serializer: Optional[ModelSerializer] = None):
@@ -45,16 +45,20 @@ class TravaSV(_TravaBase):
             Describe the fit. It will be tracked if you set up tracker.
         model_init_params: dict
             Parameters to use to initialize model_type
-        raw_split_data: SplitResult
-             Already split train/test sets
-        raw_dataset: RawDataset
-            Raw data before split
+        raw_split_data: optional SplitResult
+             Already split train/test sets.
+             Optional makes sense only if your FitPredictor contains
+             some custom logic like CVFitPredictor.
         fit_predictor: FitPredictor
             Object responsible for performing fit and predict on a model
         fit_params: dict
             Custom params to use when calling model's fit method
         predict_params: dict
             Custom params to use when calling model's predict method
+        only_calculate_metrics: bool
+            if True, ResultsHandlers won't be called, but all the metrics
+            for them will be ready. Can be useful when you run many
+            consecutive runs and you don't to be overwhelmed by the output.
         keep_models_in_memory: bool
             Whether it's needed to store models in memory after the fit
         keep_data_in_memory: bool
@@ -66,8 +70,6 @@ class TravaSV(_TravaBase):
         -------
         List of outputs for every results handler that returns not None result
         """
-        assert raw_split_data or raw_dataset, "Provide either split result or raw_dataset"
-
         fit_params = fit_params or {}
         predict_params = predict_params or {}
         model_init_params = model_init_params or {}
@@ -84,11 +86,17 @@ class TravaSV(_TravaBase):
                                        predict_params=predict_params,
                                        serializer=serializer,
                                        split_result=raw_split_data,
-                                       raw_dataset=raw_dataset,
                                        description=description)
-        result = self._results_for_evaluators(evaluators=evaluators,
-                                              save_model_results=True,
-                                              main_model_id=model_id)
+        result = None
+
+        if only_calculate_metrics:
+            self._prepare_model_results(evaluators=evaluators,
+                                        save=True,
+                                        main_model_id=model_id)
+        else:
+            result = self._results_for_evaluators(evaluators=evaluators,
+                                                  save_model_results=True,
+                                                  main_model_id=model_id)
 
         if not keep_models_in_memory:
             [evaluator.trava_model.unload_model() for evaluator in evaluators]
@@ -99,7 +107,7 @@ class TravaSV(_TravaBase):
 
     def evaluate(self,
                  model_id: str,
-                 results_handlers: Optional[List[ResultsHandler]],
+                 results_handlers: List[ResultsHandler],
                  save_results: bool) -> list:
         """
         Make possible to evaluate an existing model using new results handlers.
@@ -131,7 +139,8 @@ class TravaSV(_TravaBase):
             temp_evaluator = Evaluator(trava_model=evaluator.trava_model,
                                        fit_split_data=evaluator.fit_split_data,
                                        raw_split_data=evaluator.raw_split_data)
-            temp_evaluator.evaluate(scorers_providers=results_handlers)
+            scorers_providers: List[ScorersProvider] = list(results_handlers)
+            temp_evaluator.evaluate(scorers_providers=scorers_providers)
             temp_evaluators.append(temp_evaluator)
 
         result = self._results_for_evaluators(evaluators=temp_evaluators,
@@ -214,30 +223,38 @@ class TravaSV(_TravaBase):
     def _results_for_evaluators(self,
                                 evaluators: List[Evaluator],
                                 save_model_results: bool = False,
-                                results_handlers: List[ResultsHandler] = None,
+                                results_handlers: Optional[List[ResultsHandler]] = None,
                                 main_model_id: Optional[str] = None) -> list:
         # if main_model_id is provided it means that all evaluators
         # are related to the one run and must be averaged
-        is_agg_result = len(evaluators) > 1 and main_model_id is not None
+        evaluators_results = self._prepare_model_results(evaluators=evaluators,
+                                                         save=save_model_results,
+                                                         main_model_id=main_model_id)
 
+        all_results_handlers = results_handlers or self._results_handlers
+        return self._results_for(results=evaluators_results, results_handlers=all_results_handlers)
+
+    def _prepare_model_results(self,
+                               evaluators: List[Evaluator],
+                               save: bool = False,
+                               main_model_id: Optional[str] = None) -> List[ModelResult]:
+        is_agg_result = len(evaluators) > 1 and main_model_id
         evaluators_results = []
         for evaluator in evaluators:
             model_results = ModelResult(model_id=evaluator.model_id,
                                         evaluators=[evaluator])
             evaluators_results.append(model_results)
 
-            if not is_agg_result and save_model_results:
+            if not is_agg_result and save:
                 self._results[model_results.model_id] = model_results
-
         if is_agg_result:
-            main_model_result = ModelResult(model_id=main_model_id,
+            model_id = str(main_model_id)
+            main_model_result = ModelResult(model_id=model_id,
                                             evaluators=evaluators)
             evaluators_results = [main_model_result]
-            if save_model_results:
-                self._results[main_model_id] = main_model_result
-
-        all_results_handlers = results_handlers or self._results_handlers
-        return self._results_for(results=evaluators_results, results_handlers=all_results_handlers)
+            if save:
+                self._results[model_id] = main_model_result
+        return evaluators_results
 
     def _fit_predict(self,
                      model_id: str,
@@ -248,16 +265,15 @@ class TravaSV(_TravaBase):
                      predict_params: dict,
                      serializer: Optional[ModelSerializer],
                      split_result: Optional[SplitResult] = None,
-                     raw_dataset: Optional[RawDataset] = None,
                      description: Optional[str] = None):
         all_results_handlers = self._results_handlers + [self._tracker]
+        scorers_providers: List[ScorersProvider] = list(all_results_handlers)
 
         config = FitPredictConfig(raw_split_data=split_result,
-                                  raw_dataset=raw_dataset,
                                   raw_model=raw_model,
                                   model_init_params=model_init_params,
                                   model_id=model_id,
-                                  scorers_providers=all_results_handlers,
+                                  scorers_providers=scorers_providers,
                                   serializer=serializer,
                                   fit_params=fit_params,
                                   predict_params=predict_params,

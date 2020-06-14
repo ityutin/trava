@@ -35,10 +35,10 @@ class ModelInfo:
 
     @property
     @abstractmethod
-    def fit_time(self) -> Optional[int]:
+    def fit_time(self) -> Optional[float]:
         pass
 
     @property
     @abstractmethod
-    def predict_time(self) -> Optional[int]:
+    def predict_time(self) -> Optional[float]:
         pass

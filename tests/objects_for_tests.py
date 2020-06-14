@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Callable
 
 from trava.logger import TravaLogger
 from trava.model_serializer import ModelSerializer
@@ -10,7 +10,7 @@ from trava.trava_tracker import Tracker
 
 
 class TestScorer(Scorer):
-    def _make_scorer(self, score_func: callable, **metrics_kwargs) -> callable:
+    def _make_scorer(self, score_func: Callable, **metrics_kwargs) -> Callable:
         def scorer(model, model_info: ModelInfo, for_train: bool, X, X_raw, y):
             metric_value = score_func(X['f1'].values)
             return metric_value
@@ -19,7 +19,7 @@ class TestScorer(Scorer):
 
 
 class TestAnyScorer(OtherScorer):
-    def __init__(self, model_func: callable):
+    def __init__(self, model_func: Callable):
         def score_func(model, model_info: ModelInfo, for_train: bool, X, X_raw, y):
             return model_func(model_info)
 
