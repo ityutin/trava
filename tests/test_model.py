@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from trava.trava_model import TravaModel, _CachedModel
+from trava.trava_model import TravaModel
 
 
 @pytest.fixture(scope='class')
@@ -208,6 +208,23 @@ def test_predict(mocker, raw_model, model_id, X, y, fit_params, needs_proba):
         raw_model.predict_proba.assert_called_with(X)
 
     assert model.predict_time
+
+
+@pytest.mark.parametrize("is_classification", [True, False], ids=["is_classification", "no_classification"])
+def test_is_classification(mocker, raw_model, model_id, X, y, fit_params, is_classification):
+    predict_proba = mocker.Mock()
+
+    if is_classification:
+        raw_model.predict_proba.return_value = predict_proba
+    else:
+        raw_model.predict_proba = None
+
+    model = TravaModel(raw_model=raw_model, model_id=model_id)
+
+    if is_classification:
+        assert model.is_classification_model
+    else:
+        assert not model.is_classification_model
 
 
 @pytest.mark.parametrize("needs_proba", [True, False], ids=["proba", "no_proba"])

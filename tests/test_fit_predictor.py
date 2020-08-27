@@ -49,7 +49,7 @@ def split_result(X_y_train, X_y_test):
 
 @pytest.mark.parametrize("n_steps", [1, 3])
 def test_model_update_steps(mocker, n_steps, raw_model):
-    config = mocker.Mock()
+    config = mocker.MagicMock()
     config.fit_params = mocker.MagicMock()
     config.predict_params = mocker.MagicMock()
     config.raw_model = raw_model
@@ -299,7 +299,7 @@ def test_has_any_log_calls(mocker, split_result, raw_model):
     logger.log.assert_called()
 
 
-@pytest.mark.parametrize("n_models", [1,3])
+@pytest.mark.parametrize("n_models", [1, 3])
 def test_fit_predict(mocker,
                      model_id,
                      split_result,

@@ -27,7 +27,7 @@ class TimeSplitLogic(SplitLogic):
         self._time_col = time_col
         self._need_to_sort = need_to_sort
         self._split_logic = BasicSplitLogic(shuffle=False,
-                                            eval_from_test=True,
+                                            validation_from_test=True,
                                             group_col=group_col)
 
     def split(self,

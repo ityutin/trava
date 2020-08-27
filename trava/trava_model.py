@@ -1,4 +1,4 @@
-from time import time
+from time import time  # type: ignore
 from typing import Optional, Any, Dict
 
 import numpy as np
@@ -7,7 +7,7 @@ import pandas as pd
 from trava.model_info import ModelInfo
 
 
-class _CachedModel:
+class _RawModelImitation:
     """
     If TravaModel doesn't have raw model in memory anymore,
     it will be replaced with an object of this class to be able
@@ -31,6 +31,29 @@ class _CachedModel:
 
     def predict_proba(self, X):
         assert self._y_pred_proba is not None, "You haven't provided y_pred_proba"
+        return self._y_pred_proba
+
+
+class _RawModelWrapper:
+    def __init__(self,
+                 raw_model,
+                 y_pred: np.ndarray,
+                 y_pred_proba: np.ndarray):
+        self._raw_model = raw_model
+
+        self._y_pred: np.ndarray = y_pred
+        self._y_pred_proba: np.ndarray = y_pred_proba
+
+    def __eq__(self, o: object) -> bool:
+        return self._raw_model == o
+
+    def __getattr__(self, attr):
+        return getattr(self._raw_model, attr)
+
+    def predict(self, *args, **kwargs):
+        return self._y_pred
+
+    def predict_proba(self, *args, **kwargs):
         return self._y_pred_proba
 
 
@@ -91,9 +114,6 @@ class TravaModel(ModelInfo):
         return self._model_id
 
     def get_model(self, for_train: bool):
-        if self.raw_model:
-            return self.raw_model
-
         if for_train:
             y_pred = self._y_train_pred
             y_pred_proba = self._y_train_pred_proba
@@ -101,10 +121,15 @@ class TravaModel(ModelInfo):
             y_pred = self._y_test_pred
             y_pred_proba = self._y_test_pred_proba
 
+        if self._raw_model:
+            return _RawModelWrapper(raw_model=self._raw_model,
+                                    y_pred=y_pred,
+                                    y_pred_proba=y_pred_proba)
+
         if y_pred is None:
             raise ValueError('y_pred is missing as well as raw model, unexpected behaviour')
 
-        return _CachedModel(y_pred=y_pred, y_pred_proba=y_pred_proba)
+        return _RawModelImitation(y_pred=y_pred, y_pred_proba=y_pred_proba)
 
     @property
     def raw_model(self):
@@ -125,6 +150,10 @@ class TravaModel(ModelInfo):
     @property
     def predict_params(self) -> dict:
         return self._predict_params
+
+    @property
+    def is_classification_model(self) -> bool:
+        return self._needs_proba
 
     def y(self, for_train: bool) -> np.array:
         if for_train:

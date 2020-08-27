@@ -12,13 +12,13 @@ class BasicSplitLogic(SplitLogic):
     def __init__(self,
                  random_state: int = 15,
                  shuffle: bool = True,
-                 eval_from_test: bool = False,
+                 validation_from_test: bool = True,
                  group_col: Optional[str] = None,
                  stratify: bool = None):
         self._random_state = random_state
         self._shuffle = shuffle
         self._stratify = stratify
-        self._valid_from_test = eval_from_test
+        self._valid_from_test = validation_from_test
         self._group_col = group_col
 
     def split(self,
@@ -41,13 +41,20 @@ class BasicSplitLogic(SplitLogic):
 
         valid_data = None
         if valid_size > 0.0:
-            data_for_valid_split = test_data if self._valid_from_test else data_to_split
-            test_data, valid_data = train_test_split(data_for_valid_split,
+            if self._valid_from_test:
+                data_for_valid_split = test_data
+            else:
+                data_for_valid_split = train_data
+            data_left, valid_data = train_test_split(data_for_valid_split,
                                                      test_size=valid_size,
                                                      shuffle=self._shuffle,
                                                      stratify=self._stratify,
                                                      random_state=self._random_state,
                                                      **kwargs)
+            if self._valid_from_test:
+                test_data = data_left
+            else:
+                train_data = data_left
 
         if self._group_col:
             train_data = data[data[self._group_col].isin(train_data)]

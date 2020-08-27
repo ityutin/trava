@@ -83,9 +83,8 @@ class TrainOnAllTestOnOneFitPredictor(GroupAnalysisFitPredictor):
     """
     Trains model on a whole dataset, but predictions are made for each group separately.
     """
-    def __init__(self, group_col_name: str, logger: TravaLogger = None):
-        super().__init__(group_col_name=group_col_name, logger=logger)
-        print('')
+    def __init__(self, group_col_name: str, steps: FitPredictorSteps = None, logger: TravaLogger = None):
+        super().__init__(group_col_name=group_col_name, steps=steps, logger=logger)
         self._model = None
 
     def _models_configs(self, raw_model, config: FitPredictConfig) -> List[Tuple[TravaModel, FitPredictConfig]]:

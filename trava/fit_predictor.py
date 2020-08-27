@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import Counter
 from typing import List, Tuple, Optional
 
 from trava.evaluator import Evaluator
@@ -291,10 +292,8 @@ class FitPredictor(ABC):
             tracker.track_fit_params(model_id=trava_model.model_id, params=fit_params)
             tracker.track_predict_params(model_id=trava_model.model_id, params=predict_params)
 
-            self._logger.log(msg='Model fit start {}, '
-                                 'train shape ({}), test shape ({})'.format(model_id,
-                                                                            split_result_fit.X_train.shape,
-                                                                            split_result_fit.X_test.shape))
+            self._log_fit_start(trava_model=trava_model, split_result=split_result_fit)
+
             self._fit(trava_model=trava_model,
                       X=split_result_fit.X_train,
                       y=split_result_fit.y_train,
@@ -309,7 +308,7 @@ class FitPredictor(ABC):
             for step in self._steps.final_steps:
                 step.handle(trava_model=trava_model, config=model_config, tracker=tracker)
 
-            self._logger.log(msg='Model evaluation {}'.format(model_id))
+            self._logger.log(msg=f'Model evaluation {model_id}')
 
             # calculating metrics for the model
             evaluator = self._evaluator(model_config=model_config,
@@ -320,7 +319,7 @@ class FitPredictor(ABC):
             self._track_metrics(model_id=model_id, evaluators=[evaluator], tracker=tracker)
 
             if model_config.serializer:
-                self._logger.log(msg='Model serialization {}'.format(model_id))
+                self._logger.log(msg=f'Model serialization {model_id}')
                 tracker.track_model_artifact(model_id=model_id,
                                              model=trava_model.raw_model,
                                              serializer=model_config.serializer)
@@ -334,6 +333,21 @@ class FitPredictor(ABC):
             tracker.end_tracking(model_id=config.model_id)
 
         return evaluators
+
+    def _log_fit_start(self, trava_model: TravaModel, split_result: SplitResult):
+        msg = f'Model fit start {trava_model.model_id}:\n'
+        msg += f'train set shape ({split_result.X_train.shape})\n'
+        if trava_model.is_classification_model:
+            msg += f'target distribution ({dict(Counter(split_result.y_train))})\n'
+        msg += f'test set shape ({split_result.X_test.shape})\n'
+        if trava_model.is_classification_model:
+            msg += f'target distribution ({dict(Counter(split_result.y_test))})\n'
+
+        if split_result.X_valid is not None:
+            msg += f'validation set shape ({split_result.X_valid.shape})\n'
+            if trava_model.is_classification_model:
+                msg += f'target distribution ({dict(Counter(split_result.y_valid))})\n'
+        self._logger.log(msg=msg)
 
     def _evaluator(self, model_config: FitPredictConfig, split_result: SplitResult, model: TravaModel):
         """
