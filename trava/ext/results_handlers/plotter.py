@@ -175,11 +175,13 @@ class PlotHandler(ResultsHandler):
                       model_id: str = None,
                       fig=None,
                       ax=None):
+        plt.clf()
+
         def color_for(idx):
             r = lambda: random.randint(0, 255)
-            base_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+            base_colors = ["b", "g", "r", "c", "m", "y", "k"]
             if idx > len(base_colors) - 1:
-                return '#%02X%02X%02X' % (r(), r(), r())
+                return "#%02X%02X%02X" % (r(), r(), r())
 
             return base_colors[idx]
 
@@ -192,19 +194,19 @@ class PlotHandler(ResultsHandler):
             if not use_one_figure:
                 fig, ax = self._fig_ax(existing_fig=fig)
 
-            plot_item.plotter.plot(metric=metric, fig=fig, ax=ax, color=color_for(idx=metric_idx), label=label)
+            plot_item.plotter.plot(
+                metric=metric, fig=fig, ax=ax, color=color_for(idx=metric_idx), label=label
+            )
             if show and not use_one_figure:
-                fig.show()
+                plt.show()
 
             if not show:
-                filename = (label + '_' + metric.name).lower()
-                tracker.track_plot(model_id=model_id or metric.model_id,
-                                   fig=fig,
-                                   filename=filename)
+                filename = (label + "_" + metric.name).lower()
+                tracker.track_plot(model_id=model_id or metric.model_id, fig=fig, filename=filename)
                 plt.close(fig)
 
         if show and use_one_figure:
-            fig.show()
+            plt.show()
 
         if fig:
             plt.close(fig)
