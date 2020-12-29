@@ -5,6 +5,7 @@ class SklearnCV(CV):
     """
     Dummy wrapper for sklearn cross validation.
     """
+
     def __init__(self, sklearn_cv):
         self._sklearn_cv = sklearn_cv
 

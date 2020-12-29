@@ -24,6 +24,7 @@ class PlotItem:
         e.g. ROC AUC plot is a good example when we can compare many models on the same graph,
              But Confusion matrix can be used only separately
     """
+
     scorer: Scorer
     plotter: ScorerPlotter
     can_overlap: bool
@@ -33,6 +34,7 @@ class PlotHandler(ResultsHandler):
     """
     Plots metrics.
     """
+
     def __init__(self, plot_items: List[PlotItem]):
         """
         Parameters
@@ -54,13 +56,15 @@ class PlotHandler(ResultsHandler):
     def _track(self, results: List[ModelResult], logger: TravaLogger, tracker: Tracker):
         self._plot(results=results, logger=logger, show=False, use_one_figure=False, tracker=tracker)
 
-    def _plot(self,
-              results: List[ModelResult],
-              logger: TravaLogger,
-              show: bool,
-              tracker: Tracker,
-              use_one_figure: bool = False,
-              model_id: str = None):
+    def _plot(
+        self,
+        results: List[ModelResult],
+        logger: TravaLogger,
+        show: bool,
+        tracker: Tracker,
+        use_one_figure: bool = False,
+        model_id: str = None,
+    ):
         all_train_metrics: List[List[Metric]] = []
         all_test_metrics: List[List[Metric]] = []
         for model_result in results:
@@ -72,18 +76,16 @@ class PlotHandler(ResultsHandler):
                 for evaluator in model_result.evaluators:
                     many_model_results.append(ModelResult(model_id=evaluator.model_id, evaluators=[evaluator]))
 
-                self._plot(results=many_model_results,
-                           logger=logger,
-                           show=False,
-                           tracker=tracker,
-                           use_one_figure=True,
-                           model_id=model_result.model_id)
+                self._plot(
+                    results=many_model_results,
+                    logger=logger,
+                    show=False,
+                    tracker=tracker,
+                    use_one_figure=True,
+                    model_id=model_result.model_id,
+                )
 
-                self._plot(results=many_model_results,
-                           logger=logger,
-                           show=False,
-                           tracker=tracker,
-                           use_one_figure=False)
+                self._plot(results=many_model_results, logger=logger, show=False, tracker=tracker, use_one_figure=False)
                 continue
             if model_result.train_metrics(provider=self):
                 model_train_metrics = model_result.train_metrics(provider=self)
@@ -95,86 +97,88 @@ class PlotHandler(ResultsHandler):
         if len(all_train_metrics) > 0:
             # TODO: couldn't figure out how to fix this, postponed it
             train_metrics_set: List[Tuple[Metric]] = list(zip(*all_train_metrics))  # type: ignore
-            self._plot_metrics_set(metrics_set=train_metrics_set,
-                                   label='Train',
-                                   show=show,
-                                   use_one_figure=use_one_figure,
-                                   tracker=tracker,
-                                   model_id=model_id)
+            self._plot_metrics_set(
+                metrics_set=train_metrics_set,
+                label="Train",
+                show=show,
+                use_one_figure=use_one_figure,
+                tracker=tracker,
+                model_id=model_id,
+            )
 
         # TODO: couldn't figure out how to fix this, postponed it
         test_metrics_set: List[Tuple[Metric]] = list(zip(*all_test_metrics))  # type: ignore
-        self._plot_metrics_set(metrics_set=test_metrics_set,
-                               label='Test',
-                               show=show,
-                               use_one_figure=use_one_figure,
-                               tracker=tracker,
-                               model_id=model_id)
+        self._plot_metrics_set(
+            metrics_set=test_metrics_set,
+            label="Test",
+            show=show,
+            use_one_figure=use_one_figure,
+            tracker=tracker,
+            model_id=model_id,
+        )
 
-    def _plot_metrics_set(self,
-                          metrics_set: List[Tuple[Metric]],
-                          label: str,
-                          show: bool,
-                          use_one_figure: bool,
-                          tracker: Tracker,
-                          model_id: str = None):
+    def _plot_metrics_set(
+        self,
+        metrics_set: List[Tuple[Metric]],
+        label: str,
+        show: bool,
+        use_one_figure: bool,
+        tracker: Tracker,
+        model_id: str = None,
+    ):
         if show:
-            self._show_metrics_set(metrics_set=metrics_set,
-                                   label=label,
-                                   tracker=tracker)
+            self._show_metrics_set(metrics_set=metrics_set, label=label, tracker=tracker)
         else:
-            self._track_metrics_set(metrics_set=metrics_set,
-                                    label=label,
-                                    tracker=tracker,
-                                    use_one_figure=use_one_figure,
-                                    model_id=model_id)
+            self._track_metrics_set(
+                metrics_set=metrics_set, label=label, tracker=tracker, use_one_figure=use_one_figure, model_id=model_id
+            )
 
-    def _show_metrics_set(self,
-                          metrics_set: List[Tuple[Metric]],
-                          label: str,
-                          tracker: Tracker):
+    def _show_metrics_set(self, metrics_set: List[Tuple[Metric]], label: str, tracker: Tracker):
         fig, ax = self._fig_ax()
         for plot_idx, (metrics, plot_func) in self._enumerated_metrics_plots(metrics_set=metrics_set):
-            self._plot_metrics(metrics=metrics,
-                               plot_item=plot_func,
-                               label=label,
-                               tracker=tracker,
-                               show=True,
-                               use_one_figure=True,
-                               fig=fig,
-                               ax=ax)
+            self._plot_metrics(
+                metrics=metrics,
+                plot_item=plot_func,
+                label=label,
+                tracker=tracker,
+                show=True,
+                use_one_figure=True,
+                fig=fig,
+                ax=ax,
+            )
 
-    def _track_metrics_set(self,
-                           metrics_set: List[Tuple[Metric]],
-                           label: str,
-                           tracker: Tracker,
-                           use_one_figure: bool,
-                           model_id: str = None):
+    def _track_metrics_set(
+        self, metrics_set: List[Tuple[Metric]], label: str, tracker: Tracker, use_one_figure: bool, model_id: str = None
+    ):
         for plot_idx, (metrics, plot_item) in self._enumerated_metrics_plots(metrics_set=metrics_set):
             fig, ax = None, None
             if use_one_figure:
                 fig, ax = self._fig_ax()
 
-            self._plot_metrics(metrics=metrics,
-                               plot_item=plot_item,
-                               label=label,
-                               tracker=tracker,
-                               show=False,
-                               use_one_figure=use_one_figure,
-                               model_id=model_id,
-                               fig=fig,
-                               ax=ax)
+            self._plot_metrics(
+                metrics=metrics,
+                plot_item=plot_item,
+                label=label,
+                tracker=tracker,
+                show=False,
+                use_one_figure=use_one_figure,
+                model_id=model_id,
+                fig=fig,
+                ax=ax,
+            )
 
-    def _plot_metrics(self,
-                      metrics: Tuple[Metric],
-                      plot_item: PlotItem,
-                      label: str,
-                      tracker: Tracker,
-                      show: bool,
-                      use_one_figure: bool,
-                      model_id: str = None,
-                      fig=None,
-                      ax=None):
+    def _plot_metrics(
+        self,
+        metrics: Tuple[Metric],
+        plot_item: PlotItem,
+        label: str,
+        tracker: Tracker,
+        show: bool,
+        use_one_figure: bool,
+        model_id: str = None,
+        fig=None,
+        ax=None,
+    ):
         plt.clf()
 
         def color_for(idx):
@@ -194,9 +198,7 @@ class PlotHandler(ResultsHandler):
             if not use_one_figure:
                 fig, ax = self._fig_ax(existing_fig=fig)
 
-            plot_item.plotter.plot(
-                metric=metric, fig=fig, ax=ax, color=color_for(idx=metric_idx), label=label
-            )
+            plot_item.plotter.plot(metric=metric, fig=fig, ax=ax, color=color_for(idx=metric_idx), label=label)
             if show and not use_one_figure:
                 plt.show()
 

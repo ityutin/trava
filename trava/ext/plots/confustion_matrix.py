@@ -9,7 +9,7 @@ from trava.metric import Metric
 
 class ConfMatrixPlotter(ScorerPlotter):
     def plot(self, metric: Metric, fig, ax, color: str, label: str):
-        ax.set_title(f'{metric.model_id}: {label} Confusion matrix')
+        ax.set_title(f"{metric.model_id}: {label} Confusion matrix")
         conf_matrix = metric.value
         ConfusionMatrixDisplay(conf_matrix).plot(cmap=plt.cm.Blues, ax=ax)
 

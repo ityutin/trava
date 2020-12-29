@@ -9,6 +9,7 @@ class Tracker:
     """
     An interface for a tracker object.
     """
+
     def start_tracking(self, model_id: str, track_name: Optional[str] = None, nested: bool = False):
         pass
 

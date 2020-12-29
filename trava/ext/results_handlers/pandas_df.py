@@ -12,6 +12,7 @@ class PandasDfHandler(ResultsHandler):
     """
     Returns all the metrics wrapped in a pandas dataframe.
     """
+
     def handle(self, results: List[ModelResult], logger: TravaLogger, tracker: Tracker):
         result = pd.DataFrame()
 
@@ -20,7 +21,7 @@ class PandasDfHandler(ResultsHandler):
             other_metrics = self._metrics_dict(metrics=model_results.other_metrics(provider=self))
 
             all_metrics = {**test_metrics, **other_metrics}
-            all_metrics['model_id'] = model_results.model_id
+            all_metrics["model_id"] = model_results.model_id
 
             result = pd.concat([result, pd.DataFrame(all_metrics, index=[0])], axis=0).reset_index(drop=True)
 

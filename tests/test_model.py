@@ -34,7 +34,9 @@ def predict_params(mocker):
     return {'predict_param': 222}
 
 
-def test_copy(mocker, model_id):
+@pytest.mark.parametrize("use_existing_model", [True, False], ids=["existing model", "no existing model"])
+@pytest.mark.parametrize("only_fit", [True, False], ids=["only fit", "no only fit"])
+def test_copy(mocker, model_id, use_existing_model, only_fit):
     raw_model = mocker.Mock()
     model = TravaModel(raw_model=raw_model, model_id=model_id)
 
@@ -64,19 +66,43 @@ def test_copy(mocker, model_id):
     model._predict_time = predict_time
 
     model_copy_id = model_id + '_copy'
-    model_copy = model.copy(model_id=model_copy_id)
+    existing_model = None
+    existing_model_id = 'existing_model'
+    # what a mess... but should work
+    if use_existing_model:
+        existing_model = TravaModel(raw_model=raw_model, model_id=existing_model_id)
+        model_copy = model.copy(existing_model=existing_model, only_fit=only_fit)
+    else:
+        model_copy = model.copy(model_id=model_copy_id, only_fit=only_fit)
 
-    assert model_copy.model_id == model_copy_id
+    if use_existing_model:
+        assert model_copy.model_id == existing_model_id
+    else:
+        assert model_copy.model_id == model_copy_id
+
     y = model.y(for_train=True)
     copy_y = model_copy.y(for_train=True)
     assert np.array_equal(y, copy_y)
-    assert np.array_equal(model.y(for_train=False), model_copy.y(for_train=False))
-    assert np.array_equal(model.y_pred(for_train=False), model_copy.y_pred(for_train=False))
-    assert np.array_equal(model.y_pred_proba(for_train=False), model_copy.y_pred_proba(for_train=False))
     assert model.fit_params == model_copy.fit_params
-    assert model.predict_params == model_copy.predict_params
     assert model.fit_time == model_copy.fit_time
-    assert model.predict_time == model_copy.predict_time
+
+    if use_existing_model:
+        assert existing_model == model_copy
+    else:
+        assert existing_model != model_copy
+
+    if only_fit:
+        assert model_copy.y(for_train=False) is None
+        assert model_copy.y_pred(for_train=False) is None
+        assert model_copy.y_pred_proba(for_train=False) is None
+        assert model_copy.predict_time is None
+        assert model_copy.predict_params == {}
+    else:
+        assert np.array_equal(model.y(for_train=False), model_copy.y(for_train=False))
+        assert np.array_equal(model.y_pred(for_train=False), model_copy.y_pred(for_train=False))
+        assert np.array_equal(model.y_pred_proba(for_train=False), model_copy.y_pred_proba(for_train=False))
+        assert model.predict_time == model_copy.predict_time
+        assert model.predict_params == model_copy.predict_params
 
 
 def test_model_id(mocker, model_id):

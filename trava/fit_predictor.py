@@ -17,16 +17,19 @@ class FitPredictConfig:
     Data class, containing all the
     information needed for fit&predict process.
     """
-    def __init__(self,
-                 raw_model,
-                 model_init_params: Optional[dict],
-                 model_id: str,
-                 scorers_providers: List[ScorersProvider],
-                 serializer: Optional[ModelSerializer],
-                 raw_split_data: Optional[SplitResult] = None,
-                 fit_params: dict = None,
-                 predict_params: dict = None,
-                 description: Optional[str] = None):
+
+    def __init__(
+        self,
+        raw_model,
+        model_init_params: Optional[dict],
+        model_id: str,
+        scorers_providers: List[ScorersProvider],
+        serializer: Optional[ModelSerializer],
+        raw_split_data: Optional[SplitResult] = None,
+        fit_params: dict = None,
+        predict_params: dict = None,
+        description: Optional[str] = None,
+    ):
         self.raw_model = raw_model
         self.model_init_params = model_init_params or {}
         self.model_id = model_id
@@ -51,15 +54,17 @@ class FitPredictConfig:
         predict_params_check = self.predict_params == other.predict_params
         description_check = self.description == other.description
 
-        result = model_check \
-                 and init_params_check \
-                 and model_id_check \
-                 and scorers_providers_check \
-                 and serializer_check \
-                 and raw_split_data_check \
-                 and fit_params_check \
-                 and predict_params_check \
-                 and description_check  # noqa: E127
+        result = (
+            model_check
+            and init_params_check
+            and model_id_check
+            and scorers_providers_check
+            and serializer_check
+            and raw_split_data_check
+            and fit_params_check
+            and predict_params_check
+            and description_check
+        )  # noqa: E127
 
         return result
 
@@ -68,6 +73,7 @@ class RawModelUpdateStep(ABC):
     """
     Using this step you can update properties of a raw model object.
     """
+
     @abstractmethod
     def update_model(self, raw_model, config: FitPredictConfig):
         """
@@ -93,10 +99,8 @@ class FitPredictConfigUpdateStep:
     in FitPredictConfig to then use them in fit&predict process.
     All methods will be called in the presented order.
     """
-    def fit_split_data(self,
-                       raw_split_data: SplitResult,
-                       config: FitPredictConfig,
-                       tracker: Tracker) -> SplitResult:
+
+    def fit_split_data(self, raw_split_data: SplitResult, config: FitPredictConfig, tracker: Tracker) -> SplitResult:
         """
         Prepares split data to fit a model with.
 
@@ -115,11 +119,9 @@ class FitPredictConfigUpdateStep:
         """
         return raw_split_data
 
-    def fit_params(self,
-                   fit_params: dict,
-                   fit_split_data: SplitResult,
-                   config: FitPredictConfig,
-                   tracker: Tracker) -> dict:
+    def fit_params(
+        self, fit_params: dict, fit_split_data: SplitResult, config: FitPredictConfig, tracker: Tracker
+    ) -> dict:
         """
         Prepares fit parameters to be used with a model.
 
@@ -140,11 +142,9 @@ class FitPredictConfigUpdateStep:
         """
         return fit_params
 
-    def predict_params(self,
-                       predict_params: dict,
-                       fit_split_data: SplitResult,
-                       config: FitPredictConfig,
-                       tracker: Tracker) -> dict:
+    def predict_params(
+        self, predict_params: dict, fit_split_data: SplitResult, config: FitPredictConfig, tracker: Tracker
+    ) -> dict:
         """
         Prepares predict parameters to be used with a model.
 
@@ -171,16 +171,19 @@ class FinalHandlerStep(ABC):
     Using this step you can do whatever you want after fit&predict process
     using a resulting TravaModel object.
     """
+
     @abstractmethod
     def handle(self, trava_model: TravaModel, config: FitPredictConfig, tracker: Tracker):
         pass
 
 
 class FitPredictorSteps:
-    def __init__(self,
-                 raw_model_steps: List[RawModelUpdateStep] = None,
-                 config_steps: List[FitPredictConfigUpdateStep] = None,
-                 final_steps: List[FinalHandlerStep] = None):
+    def __init__(
+        self,
+        raw_model_steps: List[RawModelUpdateStep] = None,
+        config_steps: List[FitPredictConfigUpdateStep] = None,
+        final_steps: List[FinalHandlerStep] = None,
+    ):
         self.raw_model_steps = raw_model_steps or []
         self.config_steps = config_steps or []
         self.final_steps = final_steps or []
@@ -190,9 +193,7 @@ class FitPredictorSteps:
         config_steps = self.config_steps + other.config_steps
         final_steps = self.final_steps + other.final_steps
 
-        result = FitPredictorSteps(raw_model_steps=raw_model_steps,
-                                   config_steps=config_steps,
-                                   final_steps=final_steps)
+        result = FitPredictorSteps(raw_model_steps=raw_model_steps, config_steps=config_steps, final_steps=final_steps)
 
         return result
 
@@ -214,9 +215,8 @@ class FitPredictor(ABC):
     logger: TravaLogger
         Logger object to inform you about the flow.
     """
-    def __init__(self,
-                 steps: FitPredictorSteps = None,
-                 logger: TravaLogger = None):
+
+    def __init__(self, steps: FitPredictorSteps = None, logger: TravaLogger = None):
         self._steps = steps or FitPredictorSteps()
 
         self._logger = logger or TravaLogger()
@@ -253,11 +253,9 @@ class FitPredictor(ABC):
         if multiple_models_tracking:
             # if we are going to train the raw model multiple times, we should group those fits
             # So we first track the "root" model, it will contain averaged results between all fits.
-            self._start_tracking(config=config,
-                                 raw_model=raw_model,
-                                 model_id=config.model_id,
-                                 tracker=tracker,
-                                 nested=False)
+            self._start_tracking(
+                config=config, raw_model=raw_model, model_id=config.model_id, tracker=tracker, nested=False
+            )
 
         for trava_model, model_config in models_configs:
             # now fitting the model as many times as subclass wants
@@ -266,63 +264,57 @@ class FitPredictor(ABC):
             assert split_result_fit
 
             # here we start tracking one of the real fits.
-            self._start_tracking(config=config,
-                                 raw_model=raw_model,
-                                 model_id=model_id,
-                                 tracker=tracker,
-                                 nested=multiple_models_tracking)
+            self._start_tracking(
+                config=config, raw_model=raw_model, model_id=model_id, tracker=tracker, nested=multiple_models_tracking
+            )
 
             fit_params = model_config.fit_params
             predict_params = model_config.predict_params
             # preparing data and parameters for fit&predict
             for config_updater in self._steps.config_steps:
-                split_result_fit = config_updater.fit_split_data(raw_split_data=split_result_fit,
-                                                                 config=model_config,
-                                                                 tracker=tracker)
+                split_result_fit = config_updater.fit_split_data(
+                    raw_split_data=split_result_fit, config=model_config, tracker=tracker
+                )
 
-                fit_params = config_updater.fit_params(fit_params=fit_params,
-                                                       fit_split_data=split_result_fit,
-                                                       config=model_config,
-                                                       tracker=tracker)
-                predict_params = config_updater.predict_params(predict_params=predict_params,
-                                                               fit_split_data=split_result_fit,
-                                                               config=model_config,
-                                                               tracker=tracker)
+                fit_params = config_updater.fit_params(
+                    fit_params=fit_params, fit_split_data=split_result_fit, config=model_config, tracker=tracker
+                )
+                predict_params = config_updater.predict_params(
+                    predict_params=predict_params, fit_split_data=split_result_fit, config=model_config, tracker=tracker
+                )
 
             tracker.track_fit_params(model_id=trava_model.model_id, params=fit_params)
             tracker.track_predict_params(model_id=trava_model.model_id, params=predict_params)
 
             self._log_fit_start(trava_model=trava_model, split_result=split_result_fit)
 
-            self._fit(trava_model=trava_model,
-                      X=split_result_fit.X_train,
-                      y=split_result_fit.y_train,
-                      fit_params=fit_params,
-                      predict_params=predict_params)
+            self._fit(
+                trava_model=trava_model,
+                X=split_result_fit.X_train,
+                y=split_result_fit.y_train,
+                fit_params=fit_params,
+                predict_params=predict_params,
+            )
 
-            self._predict(trava_model=trava_model,
-                          X=split_result_fit.X_test,
-                          y=split_result_fit.y_test)
+            self._predict(trava_model=trava_model, X=split_result_fit.X_test, y=split_result_fit.y_test)
 
             # performing custom final steps provided in init
             for step in self._steps.final_steps:
                 step.handle(trava_model=trava_model, config=model_config, tracker=tracker)
 
-            self._logger.log(msg=f'Model evaluation {model_id}')
+            self._logger.log(msg=f"Model evaluation {model_id}")
 
             # calculating metrics for the model
-            evaluator = self._evaluator(model_config=model_config,
-                                        split_result=split_result_fit,
-                                        model=trava_model)
+            evaluator = self._evaluator(model_config=model_config, split_result=split_result_fit, model=trava_model)
             evaluator.evaluate(scorers_providers=model_config.scorers_providers)
 
             self._track_metrics(model_id=model_id, evaluators=[evaluator], tracker=tracker)
 
             if model_config.serializer:
-                self._logger.log(msg=f'Model serialization {model_id}')
-                tracker.track_model_artifact(model_id=model_id,
-                                             model=trava_model.raw_model,
-                                             serializer=model_config.serializer)
+                self._logger.log(msg=f"Model serialization {model_id}")
+                tracker.track_model_artifact(
+                    model_id=model_id, model=trava_model.raw_model, serializer=model_config.serializer
+                )
 
             evaluators.append(evaluator)
             tracker.end_tracking(model_id=model_id)
@@ -335,48 +327,44 @@ class FitPredictor(ABC):
         return evaluators
 
     def _log_fit_start(self, trava_model: TravaModel, split_result: SplitResult):
-        msg = f'Model fit start {trava_model.model_id}:\n'
-        msg += f'train set shape ({split_result.X_train.shape})\n'
+        msg = f"Model fit start {trava_model.model_id}:\n"
+        msg += f"train set shape ({split_result.X_train.shape})\n"
         if trava_model.is_classification_model:
-            msg += f'target distribution ({dict(Counter(split_result.y_train))})\n'
-        msg += f'test set shape ({split_result.X_test.shape})\n'
+            msg += f"target distribution ({dict(Counter(split_result.y_train))})\n"
+        msg += f"test set shape ({split_result.X_test.shape})\n"
         if trava_model.is_classification_model:
-            msg += f'target distribution ({dict(Counter(split_result.y_test))})\n'
+            msg += f"target distribution ({dict(Counter(split_result.y_test))})\n"
 
         if split_result.X_valid is not None:
-            msg += f'validation set shape ({split_result.X_valid.shape})\n'
+            msg += f"validation set shape ({split_result.X_valid.shape})\n"
             if trava_model.is_classification_model:
-                msg += f'target distribution ({dict(Counter(split_result.y_valid))})\n'
+                msg += f"target distribution ({dict(Counter(split_result.y_valid))})\n"
         self._logger.log(msg=msg)
 
     def _evaluator(self, model_config: FitPredictConfig, split_result: SplitResult, model: TravaModel):
         """
         The method was extracted for unit-test purposes. :]
         """
-        evaluator = Evaluator(trava_model=model,
-                              fit_split_data=split_result,
-                              raw_split_data=model_config.raw_split_data)
+        evaluator = Evaluator(
+            trava_model=model, fit_split_data=split_result, raw_split_data=model_config.raw_split_data
+        )
         return evaluator
 
     def _start_tracking(self, config: FitPredictConfig, raw_model, model_id: str, tracker: Tracker, nested: bool):
         tracker.start_tracking(model_id=model_id, nested=nested)
-        self._track_model(model=raw_model,
-                          model_init_params=config.model_init_params,
-                          model_id=model_id,
-                          tracker=tracker,
-                          description=config.description)
+        self._track_model(
+            model=raw_model,
+            model_init_params=config.model_init_params,
+            model_id=model_id,
+            tracker=tracker,
+            description=config.description,
+        )
 
     def _track_metrics(self, model_id: str, evaluators: List[Evaluator], tracker: Tracker):
-        model_results = ModelResult(model_id=model_id,
-                                    evaluators=evaluators)
+        model_results = ModelResult(model_id=model_id, evaluators=evaluators)
         tracker.track_model_results(model_results=model_results)
 
-    def _track_model(self,
-                     model,
-                     model_init_params: dict,
-                     model_id: str,
-                     description: Optional[str],
-                     tracker: Tracker):
+    def _track_model(self, model, model_init_params: dict, model_id: str, description: Optional[str], tracker: Tracker):
         tracker.track_model_init_params(model_id=model_id, params=model_init_params)
         tracker.track_model_info(model_id=model_id, model=model)
         if description:
@@ -389,9 +377,7 @@ class FitPredictor(ABC):
         If you want to run multiple fits on the same raw_model,
         just configure TravaModels and configs for them in your subclass.
         """
-        return [
-            (TravaModel(raw_model=raw_model, model_id=config.model_id), config)
-        ]
+        return [(TravaModel(raw_model=raw_model, model_id=config.model_id), config)]
 
     def _fit(self, trava_model: TravaModel, X, y, fit_params: dict, predict_params: dict):
         """

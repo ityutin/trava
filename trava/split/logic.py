@@ -5,12 +5,9 @@ class SplitLogic(ABC):
     """
     Encapsulates logic of how to split data.
     """
+
     @abstractmethod
-    def split(self,
-              data,
-              test_size: float,
-              valid_size: float,
-              **kwargs) -> tuple:
+    def split(self, data, test_size: float, valid_size: float, **kwargs) -> tuple:
         """
         Splits the data
 

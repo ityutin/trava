@@ -8,6 +8,7 @@ class ModelInfo:
     """
     Just an interface for TravaModel to not expose its internals.
     """
+
     @property
     @abstractmethod
     def model_id(self) -> str:

@@ -28,13 +28,16 @@ class Scorer(ABC):
     metrics_kwargs: dict
         Any additional parameters to pass to score_func
     """
-    def __init__(self,
-                 score_func: Callable,
-                 needs_proba=False,
-                 requires_raw_model=False,
-                 requires_X_y=False,
-                 name: Optional[str] = None,
-                 **metrics_kwargs):
+
+    def __init__(
+        self,
+        score_func: Callable,
+        needs_proba=False,
+        requires_raw_model=False,
+        requires_X_y=False,
+        name: Optional[str] = None,
+        **metrics_kwargs
+    ):
         self._func_name = name or score_func.__name__
         self._is_other_scorer = issubclass(type(self), OtherScorer)
         self._needs_proba = needs_proba
@@ -60,20 +63,23 @@ class Scorer(ABC):
 
     def __call__(self, trava_model: TravaModel, for_train: bool, X, X_raw, y, **kwargs):
         if self._requires_raw_model and not trava_model.raw_model():
-            raise Exception('Cannot perform eval on model {} '
-                            'because it was unloaded.'.format(trava_model.model_id))
+            raise Exception("Cannot perform eval on model {} " "because it was unloaded.".format(trava_model.model_id))
 
         if self._requires_X_y and (X is None or X_raw is None or y is None):
-            raise Exception('Cannot perform eval on model {} '
-                            'because data is required and was unloaded.'.format(trava_model.model_id))
+            raise Exception(
+                "Cannot perform eval on model {} "
+                "because data is required and was unloaded.".format(trava_model.model_id)
+            )
 
-        return self._scorer(model=trava_model.get_model(for_train=for_train),
-                            model_info=trava_model,
-                            for_train=for_train,
-                            X=X,
-                            X_raw=X_raw,
-                            y=y,
-                            **kwargs)
+        return self._scorer(
+            model=trava_model.get_model(for_train=for_train),
+            model_info=trava_model,
+            for_train=for_train,
+            X=X,
+            X_raw=X_raw,
+            y=y,
+            **kwargs
+        )
 
 
 class OtherScorer(Scorer):
@@ -81,13 +87,9 @@ class OtherScorer(Scorer):
     You may calculate any custom value you want based on model/input data etc.
     Such metrics are separated from a model's performance metrics.
     """
+
     def _make_scorer(self, score_func: Callable, **metrics_kwargs) -> Callable:
         def scorer(model, model_info: ModelInfo, for_train: bool, X, X_raw, y):
-            return score_func(model=model,
-                              model_info=model_info,
-                              for_train=for_train,
-                              X=X,
-                              X_raw=X_raw,
-                              y=y)
+            return score_func(model=model, model_info=model_info, for_train=for_train, X=X, X_raw=X_raw, y=y)
 
         return scorer

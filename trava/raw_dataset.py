@@ -3,6 +3,7 @@ class RawDataset:
     Data class representing the whole raw dataset
     that should be split somehow in the future.
     """
+
     def __init__(self, df, target_col_name: str):
         self.df = df
         self.target_col_name = target_col_name

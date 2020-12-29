@@ -17,13 +17,10 @@ class PreprocConfigStep(FitPredictConfigUpdateStep):
         Object that contains all the data transformations you need. ( without a model in it )
     """
 
-    def __init__(self, preprocessing: Pipeline = None):
+    def __init__(self, preprocessing: Pipeline):
         self._preprocessing = preprocessing
 
-    def fit_split_data(self,
-                       raw_split_data: SplitResult,
-                       config: FitPredictConfig,
-                       tracker: Tracker) -> SplitResult:
+    def fit_split_data(self, raw_split_data: SplitResult, config: FitPredictConfig, tracker: Tracker) -> SplitResult:
         X_train = self._preprocessing.fit_transform(X=raw_split_data.X_train)
         X_test = self._preprocessing.transform(X=raw_split_data.X_test)
 
@@ -32,30 +29,28 @@ class PreprocConfigStep(FitPredictConfigUpdateStep):
         if X_valid is not None:
             X_valid = self._preprocessing.transform(X=raw_split_data.X_valid)
 
-        result = SplitResult(X_train=X_train,
-                             X_test=X_test,
-                             y_train=raw_split_data.y_train,
-                             y_test=raw_split_data.y_test,
-                             X_valid=X_valid,
-                             y_valid=raw_split_data.y_valid)
+        result = SplitResult(
+            X_train=X_train,
+            X_test=X_test,
+            y_train=raw_split_data.y_train,
+            y_test=raw_split_data.y_test,
+            X_valid=X_valid,
+            y_valid=raw_split_data.y_valid,
+        )
 
         return result
 
-    def fit_params(self,
-                   fit_params: dict,
-                   fit_split_data: SplitResult,
-                   config: FitPredictConfig,
-                   tracker: Tracker) -> dict:
+    def fit_params(
+        self, fit_params: dict, fit_split_data: SplitResult, config: FitPredictConfig, tracker: Tracker
+    ) -> dict:
         """
         Previous steps could already put some data in params.
         """
         return self._find_and_process_df(params=fit_params)
 
-    def predict_params(self,
-                       predict_params: dict,
-                       fit_split_data: SplitResult,
-                       config: FitPredictConfig,
-                       tracker: Tracker) -> dict:
+    def predict_params(
+        self, predict_params: dict, fit_split_data: SplitResult, config: FitPredictConfig, tracker: Tracker
+    ) -> dict:
         return self._find_and_process_df(params=predict_params)
 
     def _find_and_process_df(self, params: dict) -> dict:

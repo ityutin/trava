@@ -8,6 +8,7 @@ class ScorersProvider:
     """
     Just an interface for a source of scorers.
     """
+
     @property
     def provider_id(self) -> str:
         return type(self).__name__

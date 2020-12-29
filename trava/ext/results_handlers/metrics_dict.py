@@ -12,6 +12,7 @@ class MetricsDictHandler(ResultsHandler):
     """
     Returns all the metrics wrapped in a dictionary.
     """
+
     def __init__(self, scorers: List[Scorer], include_train_metrics: bool = False):
         super().__init__(scorers)
 
@@ -23,11 +24,11 @@ class MetricsDictHandler(ResultsHandler):
         for model_results in results:
             model_metrics = {}
             if self._include_train_metrics:
-                model_metrics['train'] = self._metrics_dict(metrics=model_results.train_metrics(provider=self))
+                model_metrics["train"] = self._metrics_dict(metrics=model_results.train_metrics(provider=self))
 
-            model_metrics['test'] = self._metrics_dict(metrics=model_results.test_metrics(provider=self))
+            model_metrics["test"] = self._metrics_dict(metrics=model_results.test_metrics(provider=self))
             any_metrics = model_results.other_metrics(provider=self)
-            model_metrics['other'] = self._metrics_dict(metrics=any_metrics)
+            model_metrics["other"] = self._metrics_dict(metrics=any_metrics)
 
             result[model_results.model_id] = model_metrics
 

@@ -23,7 +23,7 @@ class XGBoostEvalLogic(CommonBoostingEvalLogic):
 
     @staticmethod
     def _results_key(idx: int) -> str:
-        return 'validation_' + str(idx)
+        return "validation_" + str(idx)
 
 
 class XGBoostRankerEvalLogic(XGBoostEvalLogic):
@@ -32,4 +32,4 @@ class XGBoostRankerEvalLogic(XGBoostEvalLogic):
 
     @staticmethod
     def _results_key(idx: int) -> str:
-        return 'eval_' + str(idx)
+        return "eval_" + str(idx)

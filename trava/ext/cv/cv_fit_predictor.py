@@ -10,15 +10,16 @@ from trava.split.result import SplitResult
 
 
 class CVFitPredictor(FitPredictor):
-    def __init__(self,
-                 cv: CV,
-                 raw_dataset: RawDataset,
-                 ignore_cols: List[str],
-                 groups=None,
-                 steps: FitPredictorSteps = None,
-                 logger: TravaLogger = None):
-        super().__init__(steps=steps or FitPredictorSteps(),
-                         logger=logger)
+    def __init__(
+        self,
+        cv: CV,
+        raw_dataset: RawDataset,
+        ignore_cols: List[str],
+        groups=None,
+        steps: FitPredictorSteps = None,
+        logger: TravaLogger = None,
+    ):
+        super().__init__(steps=steps or FitPredictorSteps(), logger=logger)
 
         self._cv = cv
         self._raw_dataset = raw_dataset
@@ -36,20 +37,19 @@ class CVFitPredictor(FitPredictor):
             X_train, y_train = X_cleaned.iloc[train_indices], y.iloc[train_indices]
             X_test, y_test = X_cleaned.iloc[test_indices], y.iloc[test_indices]
 
-            split_result = SplitResult(X_train=X_train,
-                                       y_train=y_train,
-                                       X_test=X_test,
-                                       y_test=y_test)
+            split_result = SplitResult(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
 
-            fold_model_id = config.model_id + '_fold_{}'.format(fold_idx + 1)
-            model_config = FitPredictConfig(raw_split_data=split_result,
-                                            raw_model=config.raw_model,
-                                            model_init_params=config.model_init_params,
-                                            model_id=fold_model_id,
-                                            scorers_providers=config.scorers_providers,
-                                            serializer=config.serializer,
-                                            fit_params=config.fit_params,
-                                            predict_params=config.predict_params)
+            fold_model_id = config.model_id + "_fold_{}".format(fold_idx + 1)
+            model_config = FitPredictConfig(
+                raw_split_data=split_result,
+                raw_model=config.raw_model,
+                model_init_params=config.model_init_params,
+                model_id=fold_model_id,
+                scorers_providers=config.scorers_providers,
+                serializer=config.serializer,
+                fit_params=config.fit_params,
+                predict_params=config.predict_params,
+            )
 
             trava_model = TravaModel(raw_model=raw_model, model_id=fold_model_id)
 

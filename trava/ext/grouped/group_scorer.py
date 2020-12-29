@@ -1,5 +1,5 @@
 from collections import Counter
-
+import typing as t
 import numpy as np
 
 from trava.model_info import ModelInfo
@@ -23,21 +23,16 @@ class GroupScorer(Scorer):
     metrics_kwargs: dict
         Any additional parameters to pass to score_func
     """
-    def __init__(self,
-                 score_func: callable,
-                 group_col_name: str,
-                 needs_grouped_y=False,
-                 **metrics_kwargs):
+
+    def __init__(self, score_func: t.Callable, group_col_name: str, needs_grouped_y=False, **metrics_kwargs):
         self._group_col_name = group_col_name
         self._needs_grouped_y = needs_grouped_y
 
-        super().__init__(score_func=score_func,
-                         needs_proba=False,
-                         requires_raw_model=False,
-                         requires_X_y=True,
-                         **metrics_kwargs)
+        super().__init__(
+            score_func=score_func, needs_proba=False, requires_raw_model=False, requires_X_y=True, **metrics_kwargs
+        )
 
-    def _make_scorer(self, score_func: callable, **metrics_kwargs) -> callable:
+    def _make_scorer(self, score_func: t.Callable, **metrics_kwargs) -> t.Callable:
         def scorer(model, model_info: ModelInfo, for_train: bool, X, X_raw, y):
             y_pred = model_info.y_pred(for_train=for_train)
             groups = X_raw[self._group_col_name].values

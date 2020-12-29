@@ -21,6 +21,7 @@ def track_if_enabled(func):
         if tracker.is_enabled:
             return func(*args, **kwargs)
         return None
+
     return wrapper
 
 
@@ -35,6 +36,7 @@ class TravaTracker(Tracker, ResultsHandler):
     scorers: List[Scorer]
         Provided scorers will be used to get metrics for tracking.
     """
+
     def __init__(self, scorers: List[Scorer]):
 
         super().__init__(scorers=scorers)
@@ -111,7 +113,7 @@ class TravaTracker(Tracker, ResultsHandler):
     @track_if_enabled
     def track_model_artifact(self, model_id: str, model, serializer: ModelSerializer):
         tmpdir = mkdtemp()
-        filepath = os.path.join(tmpdir, model_id + '_model')
+        filepath = os.path.join(tmpdir, model_id + "_model")
         serializer.save(model=model, path=filepath)
         self.track_artifact(model_id=model_id, filepath=filepath)
         rmtree(tmpdir)
@@ -132,7 +134,7 @@ class TravaTracker(Tracker, ResultsHandler):
 
         tmpdir = mkdtemp()
         try:
-            filepath = os.path.join(tmpdir, filename + '.png')
+            filepath = os.path.join(tmpdir, filename + ".png")
             fig.savefig(filepath)
             self.track_artifact(model_id=model_id, filepath=filepath)
         finally:
@@ -151,10 +153,8 @@ class TravaTracker(Tracker, ResultsHandler):
             self.track_model_results(model_results=model_results)
 
     def track_model_results(self, model_results: ModelResult):
-        self._track_metrics(model_id=model_results.model_id,
-                            metrics=model_results.test_metrics(provider=self))
-        self._track_metrics(model_id=model_results.model_id,
-                            metrics=model_results.other_metrics(provider=self))
+        self._track_metrics(model_id=model_results.model_id, metrics=model_results.test_metrics(provider=self))
+        self._track_metrics(model_id=model_results.model_id, metrics=model_results.other_metrics(provider=self))
 
     def _track_metrics(self, model_id: str, metrics: List[Metric]):
         for metric in metrics:

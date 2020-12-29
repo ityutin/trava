@@ -9,28 +9,35 @@ class SklearnScorer(Scorer):
     """
     Uses standard sklearn's make_scorer.
     """
-    def __init__(self,
-                 score_func: Callable,
-                 greater_is_better=True,
-                 needs_proba=False,
-                 needs_threshold=False,
-                 sample_weight_required=False,
-                 **metrics_kwargs):
+
+    def __init__(
+        self,
+        score_func: Callable,
+        greater_is_better=True,
+        needs_proba=False,
+        needs_threshold=False,
+        sample_weight_required=False,
+        **metrics_kwargs
+    ):
         self._greater_is_better = greater_is_better
         self._needs_threshold = needs_threshold
         self._sample_weight_required = sample_weight_required
 
-        super().__init__(score_func=score_func,
-                         needs_proba=needs_proba,
-                         requires_raw_model=needs_threshold,
-                         requires_X_y=False,
-                         **metrics_kwargs)
+        super().__init__(
+            score_func=score_func,
+            needs_proba=needs_proba,
+            requires_raw_model=needs_threshold,
+            requires_X_y=False,
+            **metrics_kwargs
+        )
 
     def _make_scorer(self, score_func: Callable, **metrics_kwargs) -> Callable:
         def scorer(model, model_info: ModelInfo, for_train: bool, X, X_raw, y):
             if self._sample_weight_required and X is None:
-                raise Exception('Sample weight is required for score ({}) calculation, '
-                                'so it must be called with valid X_y data'.format(self.func_name))
+                raise Exception(
+                    "Sample weight is required for score ({}) calculation, "
+                    "so it must be called with valid X_y data".format(self.func_name)
+                )
 
             if X is None:
                 # the last resort. If data and model are unloaded and your metric support interface
@@ -47,19 +54,21 @@ class SklearnScorer(Scorer):
 
                 result = score_func(y_cached, y_pred_values, **metrics_kwargs)
             else:
-                sk_scorer = self._get_sklearn_scorer(score_func=score_func,
-                                                     **metrics_kwargs)
+                sk_scorer = self._get_sklearn_scorer(score_func=score_func, **metrics_kwargs)
                 sample_weight = self._sample_weight(X=X, X_raw=X_raw)
                 result = sk_scorer(model, X, y, sample_weight=sample_weight)
             return result
+
         return scorer
 
     def _get_sklearn_scorer(self, score_func: Callable, **metrics_kwargs):
-        result = make_scorer(score_func=score_func,
-                             greater_is_better=self._greater_is_better,
-                             needs_proba=self._needs_proba,
-                             needs_threshold=self._needs_threshold,
-                             **metrics_kwargs)
+        result = make_scorer(
+            score_func=score_func,
+            greater_is_better=self._greater_is_better,
+            needs_proba=self._needs_proba,
+            needs_threshold=self._needs_threshold,
+            **metrics_kwargs
+        )
         return result
 
     @staticmethod
@@ -72,6 +81,7 @@ class SklearnScorer(Scorer):
 
 
 # wrappers for sklearn metrics
+
 
 def sk(score_func: Callable, **kwargs) -> Scorer:
     return _sk(score_func=score_func, needs_proba=False, **kwargs)

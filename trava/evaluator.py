@@ -20,10 +20,8 @@ class Evaluator:
     trava_model: TravaModel
         Encapsulates a real raw model and operations on it.
     """
-    def __init__(self,
-                 fit_split_data: SplitResult,
-                 raw_split_data: SplitResult,
-                 trava_model: TravaModel):
+
+    def __init__(self, fit_split_data: SplitResult, raw_split_data: SplitResult, trava_model: TravaModel):
         self._trava_model = trava_model
         self._fit_split_data = fit_split_data
         self._raw_split_data = raw_split_data
@@ -61,24 +59,17 @@ class Evaluator:
         -------
         Tuple of metrics separated by train, test and other metrics.
         """
-        train_metrics = self._metrics_map(for_train=True,
-                                          scorers_providers=scorers_providers,
-                                          use_metric_scorers=True)
+        train_metrics = self._metrics_map(for_train=True, scorers_providers=scorers_providers, use_metric_scorers=True)
 
-        test_metrics = self._metrics_map(for_train=False,
-                                         scorers_providers=scorers_providers,
-                                         use_metric_scorers=True)
+        test_metrics = self._metrics_map(for_train=False, scorers_providers=scorers_providers, use_metric_scorers=True)
 
-        other_metrics = self._metrics_map(for_train=False,
-                                          scorers_providers=scorers_providers,
-                                          use_metric_scorers=False)
+        other_metrics = self._metrics_map(
+            for_train=False, scorers_providers=scorers_providers, use_metric_scorers=False
+        )
 
-        self._merge_metrics(all_metrics=self._train_metrics,
-                            new_metrics=train_metrics)
-        self._merge_metrics(all_metrics=self._test_metrics,
-                            new_metrics=test_metrics)
-        self._merge_metrics(all_metrics=self._other_metrics,
-                            new_metrics=other_metrics)
+        self._merge_metrics(all_metrics=self._train_metrics, new_metrics=train_metrics)
+        self._merge_metrics(all_metrics=self._test_metrics, new_metrics=test_metrics)
+        self._merge_metrics(all_metrics=self._other_metrics, new_metrics=other_metrics)
 
         return train_metrics, test_metrics, other_metrics
 
@@ -115,10 +106,9 @@ class Evaluator:
     def _other_scorers_getter() -> Callable[[ScorersProvider], list]:
         return lambda provider: provider.other_scorers()
 
-    def _metrics_map(self,
-                     for_train: bool,
-                     scorers_providers: List[ScorersProvider],
-                     use_metric_scorers: bool) -> Dict[str, List[Metric]]:
+    def _metrics_map(
+        self, for_train: bool, scorers_providers: List[ScorersProvider], use_metric_scorers: bool
+    ) -> Dict[str, List[Metric]]:
         """
         Calculates metrics using the saved scorers providers
         """
@@ -150,11 +140,7 @@ class Evaluator:
                     provider_metrics.append(metrics_cache[scorer.func_name])
                     continue
 
-                metric = self._get_metric(X=X,
-                                          X_raw=X_raw,
-                                          y=y,
-                                          for_train=for_train,
-                                          scorer=scorer)
+                metric = self._get_metric(X=X, X_raw=X_raw, y=y, for_train=for_train, scorer=scorer)
                 metrics_cache[scorer.func_name] = metric
 
                 provider_metrics.append(metric)
@@ -168,9 +154,7 @@ class Evaluator:
         Calculate metric using the given scorer
         """
         value = scorer(trava_model=self.trava_model, for_train=for_train, X=X, X_raw=X_raw, y=y)
-        return Metric(name=scorer.func_name,
-                      value=value,
-                      model_id=self.model_id)
+        return Metric(name=scorer.func_name, value=value, model_id=self.model_id)
 
     def unload_data(self):
         """

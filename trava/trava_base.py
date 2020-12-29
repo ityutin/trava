@@ -24,10 +24,13 @@ class _TravaBase(ABC):
     results_handlers: list
         Each results handler provides logic how to present the metrics to a user.
     """
-    def __init__(self,
-                 logger: Optional[TravaLogger] = None,
-                 tracker: Optional[TravaTracker] = None,
-                 results_handlers: List[ResultsHandler] = None):
+
+    def __init__(
+        self,
+        logger: Optional[TravaLogger] = None,
+        tracker: Optional[TravaTracker] = None,
+        results_handlers: List[ResultsHandler] = None,
+    ):
         self._logger = logger or TravaLogger()
         self._tracker: TravaTracker = tracker or TravaTracker(scorers=[])
         self._results_handlers = results_handlers or []
@@ -47,9 +50,7 @@ class _TravaBase(ABC):
         all_model_results = list(self._results.values())
         return self._results_for(results=all_model_results, results_handlers=self._results_handlers)
 
-    def _results_for(self,
-                     results: List[ModelResult],
-                     results_handlers: List[ResultsHandler]) -> list:
+    def _results_for(self, results: List[ModelResult], results_handlers: List[ResultsHandler]) -> list:
         """
         Applies all the handlers and returns their result
 
@@ -102,7 +103,6 @@ class _TravaBase(ABC):
         See _trackable_init_params_types for supported param types.
         """
         raw_model = model_type(**model_init_params)
-        all_init_params = merge_given_params_with_default(object_type=model_type,
-                                                          params=model_init_params)
+        all_init_params = merge_given_params_with_default(object_type=model_type, params=model_init_params)
 
         return raw_model, all_init_params

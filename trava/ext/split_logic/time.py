@@ -20,26 +20,16 @@ class TimeSplitLogic(SplitLogic):
         Whether your data contains groups and you want
         to split every group separately.
     """
-    def __init__(self,
-                 time_col: str,
-                 need_to_sort=True,
-                 group_col: Optional[str] = None):
+
+    def __init__(self, time_col: str, need_to_sort=True, group_col: Optional[str] = None):
         self._time_col = time_col
         self._need_to_sort = need_to_sort
-        self._split_logic = BasicSplitLogic(shuffle=False,
-                                            validation_from_test=True,
-                                            group_col=group_col)
+        self._split_logic = BasicSplitLogic(shuffle=False, validation_from_test=True, group_col=group_col)
 
-    def split(self,
-              data,
-              test_size: float,
-              valid_size: float,
-              **kwargs) -> tuple:
+    def split(self, data, test_size: float, valid_size: float, **kwargs) -> tuple:
         sorted_data = data
 
         if self._need_to_sort:
             sorted_data = data.sort_values(self._time_col)
 
-        return self._split_logic.split(data=sorted_data,
-                                       test_size=test_size,
-                                       valid_size=valid_size)
+        return self._split_logic.split(data=sorted_data, test_size=test_size, valid_size=valid_size)

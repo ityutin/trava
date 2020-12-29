@@ -20,9 +20,8 @@ class _RawModelImitation:
     y_pred_proba: np.array
         classes' probabilities, predicted by a raw model
     """
-    def __init__(self,
-                 y_pred,
-                 y_pred_proba: Optional[Any] = None):
+
+    def __init__(self, y_pred, y_pred_proba: Optional[Any] = None):
         self._y_pred = y_pred
         self._y_pred_proba = y_pred_proba
 
@@ -35,10 +34,7 @@ class _RawModelImitation:
 
 
 class _RawModelWrapper:
-    def __init__(self,
-                 raw_model,
-                 y_pred: np.ndarray,
-                 y_pred_proba: np.ndarray):
+    def __init__(self, raw_model, y_pred: np.ndarray, y_pred_proba: np.ndarray):
         self._raw_model = raw_model
 
         self._y_pred: np.ndarray = y_pred
@@ -69,11 +65,10 @@ class TravaModel(ModelInfo):
     model_id: str
         Model unique identifier, will be used for saving metrics etc
     """
-    def __init__(self,
-                 raw_model,
-                 model_id: str):
+
+    def __init__(self, raw_model, model_id: str):
         self._raw_model = raw_model
-        self._needs_proba = hasattr(raw_model, 'predict_proba') and callable(raw_model.predict_proba)
+        self._needs_proba = hasattr(raw_model, "predict_proba") and callable(raw_model.predict_proba)
         self._model_id = model_id
 
         self._y_train = None
@@ -88,24 +83,36 @@ class TravaModel(ModelInfo):
         self._fit_time: Optional[float] = None
         self._predict_time: Optional[float] = None
 
-    def copy(self, model_id: str):
+    def copy(
+        self, model_id: Optional[str] = None, existing_model: Optional["TravaModel"] = None, only_fit: bool = True
+    ):
         """
         Makes a copy of the trava_model, but with another model_id
         """
-        result = TravaModel(raw_model=self.raw_model, model_id=model_id)
+        if (not model_id and not existing_model) or (model_id and existing_model):
+            raise Exception("Pass either model_id or existing_model")
+
+        result = existing_model
+        if not result:
+            # TODO: ugly
+            assert model_id
+            result = TravaModel(raw_model=self.raw_model, model_id=model_id)
+
         result._y_train = np.copy(self._y_train)
         result._y_train_pred = np.copy(self._y_train_pred)
         result._y_train_pred_proba = np.copy(self._y_train_pred_proba)
-        result._y_test = np.copy(self._y_test)
-        result._y_test_pred = np.copy(self._y_test_pred)
-        result._y_test_pred_proba = np.copy(self._y_test_pred_proba)
+        if not only_fit:
+            result._y_test = np.copy(self._y_test)
+            result._y_test_pred = np.copy(self._y_test_pred)
+            result._y_test_pred_proba = np.copy(self._y_test_pred_proba)
 
         if self.fit_params:
             result._fit_params = self.fit_params.copy()
-        if self.predict_params:
+        if not only_fit and self.predict_params:
             result._predict_params = self.predict_params.copy()
         result._fit_time = self.fit_time
-        result._predict_time = self.predict_time
+        if not only_fit:
+            result._predict_time = self.predict_time
 
         return result
 
@@ -122,12 +129,10 @@ class TravaModel(ModelInfo):
             y_pred_proba = self._y_test_pred_proba
 
         if self._raw_model:
-            return _RawModelWrapper(raw_model=self._raw_model,
-                                    y_pred=y_pred,
-                                    y_pred_proba=y_pred_proba)
+            return _RawModelWrapper(raw_model=self._raw_model, y_pred=y_pred, y_pred_proba=y_pred_proba)
 
         if y_pred is None:
-            raise ValueError('y_pred is missing as well as raw model, unexpected behaviour')
+            raise ValueError("y_pred is missing as well as raw model, unexpected behaviour")
 
         return _RawModelImitation(y_pred=y_pred, y_pred_proba=y_pred_proba)
 

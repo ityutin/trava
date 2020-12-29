@@ -22,8 +22,10 @@ class MLFlowTracker(TravaTracker):
     def __getattr__(self, called_method):
         result = getattr(mlflow, called_method)
         if callable(result):
+
             def wrapper(*args, **kwargs):
                 return getattr(mlflow, called_method)(*args, **kwargs)
+
             return wrapper
         raise AttributeError("'%s' object has no attribute '%s'" % (self.__class__.__name__, called_method))
 
@@ -52,24 +54,24 @@ class MLFlowTracker(TravaTracker):
         mlflow.set_experiment(group)  # type: ignore
 
     def _track_model_description(self, model_id: str, description: str):
-        self.track_tag(model_id=model_id, tag_key='description', tag_value=description)
+        self.track_tag(model_id=model_id, tag_key="description", tag_value=description)
 
     def _track_model_init_params(self, model_id: str, params: dict):
         mlflow.log_params(params)  # type: ignore
 
     def _track_fit_params(self, model_id: str, params: dict):
-        prepared_fit_params = self._prepare_params(params=params, key_prefix='fit_param')
+        prepared_fit_params = self._prepare_params(params=params, key_prefix="fit_param")
         mlflow.log_params(prepared_fit_params)  # type: ignore
 
     def _track_predict_params(self, model_id: str, params: dict):
-        prepared_predict_params = self._prepare_params(params=params, key_prefix='predict_param')
+        prepared_predict_params = self._prepare_params(params=params, key_prefix="predict_param")
         mlflow.log_params(prepared_predict_params)  # type: ignore
 
     def _track_metric_value(self, model_id: str, name: str, value, step=None):
         mlflow.log_metric(name, value, step=step)  # type: ignore
 
     def _track_model_info(self, model_id: str, model):
-        self.track_tag(model_id=model_id, tag_key='model_type', tag_value=type(model).__name__)
+        self.track_tag(model_id=model_id, tag_key="model_type", tag_value=type(model).__name__)
 
     def _track_tag(self, model_id: str, tag_key: str, tag_value):
         mlflow.set_tag(tag_key, tag_value)  # type: ignore
@@ -85,6 +87,6 @@ class MLFlowTracker(TravaTracker):
         filtered_params = filter_params(params=params)
 
         for key in list(filtered_params.keys()):
-            filtered_params[f'{key_prefix}__{key}'] = filtered_params.pop(key)
+            filtered_params[f"{key_prefix}__{key}"] = filtered_params.pop(key)
 
         return filtered_params

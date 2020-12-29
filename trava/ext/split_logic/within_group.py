@@ -19,19 +19,13 @@ class WithinGroupSplitLogic(SplitLogic):
     group_split_logic_kwargs: dict
         Any additional parameters you want to pass to group_split_logic.
     """
-    def __init__(self,
-                 group_col: str,
-                 group_split_logic: SplitLogic,
-                 group_split_logic_kwargs: dict = None):
+
+    def __init__(self, group_col: str, group_split_logic: SplitLogic, group_split_logic_kwargs: dict = None):
         self._group_col = group_col
         self._group_split_logic = group_split_logic or BasicSplitLogic()
         self._group_split_logic_kwargs = group_split_logic_kwargs if group_split_logic_kwargs else {}
 
-    def split(self,
-              data,
-              test_size: float,
-              valid_size: float,
-              **kwargs) -> tuple:
+    def split(self, data, test_size: float, valid_size: float, **kwargs) -> tuple:
         unique_groups = data[self._group_col].unique()
 
         all_groups_data = []
@@ -39,10 +33,9 @@ class WithinGroupSplitLogic(SplitLogic):
         for group in unique_groups:
             group_data = data[data[self._group_col] == group]
 
-            split_group_data = self._group_split_logic.split(group_data,
-                                                             test_size=test_size,
-                                                             valid_size=valid_size,
-                                                             **self._group_split_logic_kwargs)
+            split_group_data = self._group_split_logic.split(
+                group_data, test_size=test_size, valid_size=valid_size, **self._group_split_logic_kwargs
+            )
             if not valid_size:
                 # to safely merge dataframes after split within each group
                 split_group_data = split_group_data[:2]

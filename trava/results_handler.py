@@ -12,6 +12,7 @@ class ResultsHandler(ABC, ScorersProvider):
     """
     Provides logic how to process and show calculated metrics to a user.
     """
+
     def __init__(self, scorers: List[Scorer]):
         """
         Parameters

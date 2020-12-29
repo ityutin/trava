@@ -5,10 +5,8 @@ class Metric:
     """
     Data class that contains result of some scorer's calculation.
     """
-    def __init__(self,
-                 name: str,
-                 value,
-                 model_id: str):
+
+    def __init__(self, name: str, value, model_id: str):
         """
         Parameters
         ----------

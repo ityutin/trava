@@ -21,9 +21,8 @@ class ModelResult:
     evaluators:
         All the fits that were made with the same model.
     """
-    def __init__(self,
-                 model_id: str,
-                 evaluators: List[Evaluator]):
+
+    def __init__(self, model_id: str, evaluators: List[Evaluator]):
         assert len(evaluators) > 0, "At least one evaluator is required"
 
         self._model_id = model_id
@@ -70,7 +69,7 @@ class ModelResult:
         -------
         All metrics calculated on the train set.
         """
-        return self._metrics(provider=provider, on='train')
+        return self._metrics(provider=provider, on="train")
 
     def test_metrics(self, provider: ScorersProvider) -> List[Metric]:
         """
@@ -83,7 +82,7 @@ class ModelResult:
         -------
         All metrics calculated on the test set.
         """
-        return self._metrics(provider=provider, on='test')
+        return self._metrics(provider=provider, on="test")
 
     def other_metrics(self, provider: ScorersProvider) -> List[Metric]:
         """
@@ -96,12 +95,12 @@ class ModelResult:
         -------
         All other metrics calculated on the test set.
         """
-        return self._metrics(provider=provider, on='any')
+        return self._metrics(provider=provider, on="any")
 
     def _metrics(self, provider: ScorersProvider, on: str) -> List[Metric]:
-        all_metrics = [self._get_metrics(provider=provider,
-                                         evaluator=evaluator,
-                                         on=on) for evaluator in self._evaluators]
+        all_metrics = [
+            self._get_metrics(provider=provider, evaluator=evaluator, on=on) for evaluator in self._evaluators
+        ]
         return self._calculate_metrics(metrics=all_metrics)
 
     def _calculate_metrics(self, metrics: List[List[Metric]]):
@@ -129,9 +128,7 @@ class ModelResult:
 
             mean_value = np.mean([metric.value for metric in zipped_metrics])
 
-            mean_metric = type(first_metric)(name=first_metric.name,
-                                             value=mean_value,
-                                             model_id=self._model_id)
+            mean_metric = type(first_metric)(name=first_metric.name, value=mean_value, model_id=self._model_id)
 
             result.append(mean_metric)
 
@@ -139,11 +136,11 @@ class ModelResult:
 
     @staticmethod
     def _get_metrics(provider: ScorersProvider, evaluator: Evaluator, on: str) -> List[Metric]:
-        if on == 'train':
+        if on == "train":
             return evaluator.train_metrics(provider=provider)
-        elif on == 'test':
+        elif on == "test":
             return evaluator.test_metrics(provider=provider)
-        elif on == 'any':
+        elif on == "any":
             return evaluator.other_metrics(provider=provider)
         else:
-            raise ValueError('Unknown source of metrics {}'.format(on))
+            raise ValueError("Unknown source of metrics {}".format(on))
