@@ -4,9 +4,9 @@ import numpy as np
 from trava.trava_model import TravaModel
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope="class")
 def model_id():
-    return 'test_model_id'
+    return "test_model_id"
 
 
 @pytest.fixture
@@ -26,12 +26,12 @@ def y(mocker):
 
 @pytest.fixture
 def fit_params(mocker):
-    return {'fit_param': 111}
+    return {"fit_param": 111}
 
 
 @pytest.fixture
 def predict_params(mocker):
-    return {'predict_param': 222}
+    return {"predict_param": 222}
 
 
 @pytest.mark.parametrize("use_existing_model", [True, False], ids=["existing model", "no existing model"])
@@ -47,8 +47,8 @@ def test_copy(mocker, model_id, use_existing_model, only_fit):
     y_test_pred = np.array([6, 7, 8])
     y_test_pred_proba = np.array([9, 10, 11])
 
-    fit_params = {'1': 2}
-    predict_params = {'2': 3}
+    fit_params = {"1": 2}
+    predict_params = {"2": 3}
     fit_time = 123
     predict_time = 434
 
@@ -65,9 +65,9 @@ def test_copy(mocker, model_id, use_existing_model, only_fit):
     model._fit_time = fit_time
     model._predict_time = predict_time
 
-    model_copy_id = model_id + '_copy'
+    model_copy_id = model_id + "_copy"
     existing_model = None
-    existing_model_id = 'existing_model'
+    existing_model_id = "existing_model"
     # what a mess... but should work
     if use_existing_model:
         existing_model = TravaModel(raw_model=raw_model, model_id=existing_model_id)
@@ -151,9 +151,9 @@ def test_get_model_unload(mocker, raw_model, for_train):
         trava_model.get_model(for_train=for_train)
 
     if for_train:
-        y_pred_key = '_y_train_pred'
+        y_pred_key = "_y_train_pred"
     else:
-        y_pred_key = '_y_test_pred'
+        y_pred_key = "_y_test_pred"
 
     y_pred_mock = mocker.Mock()
     mocker.patch.object(trava_model, y_pred_key, y_pred_mock)

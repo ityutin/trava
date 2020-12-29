@@ -6,9 +6,9 @@ from trava.metric import Metric
 from trava.model_results import ModelResult
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope="class")
 def model_id():
-    return 'test_model_id'
+    return "test_model_id"
 
 
 def test_evaluators(mocker, model_id):
@@ -51,7 +51,7 @@ def test_models(mocker, model_id, n_evaluators):
         trava_model = mocker.Mock()
         raw_model = mocker.Mock()
         trava_model.raw_model = raw_model
-        evaluator.model_id = model_id + '_' + str(idx)
+        evaluator.model_id = model_id + "_" + str(idx)
         evaluator.trava_model = trava_model
 
         evaluators.append(evaluator)
@@ -66,20 +66,20 @@ def test_models(mocker, model_id, n_evaluators):
 def test_train_metrics(mocker, n_evaluators):
     scorers_provider = mocker.Mock()
 
-    main_model_id = 'main_model_id'
+    main_model_id = "main_model_id"
     all_metrics = []
     evaluators = []
     for idx in range(n_evaluators):
         evaluator = mocker.Mock()
         if n_evaluators > 1:
-            evaluator_model_id = 'model_' + str(idx)
+            evaluator_model_id = "model_" + str(idx)
         else:
             evaluator_model_id = main_model_id
 
         evaluator.model_id = evaluator_model_id
         metrics = [
-            Metric(name='test_metric_1', value=random.randint(0, 1000), model_id=evaluator_model_id),
-            Metric(name='test_metric_2', value='blahblah', model_id=evaluator_model_id)
+            Metric(name="test_metric_1", value=random.randint(0, 1000), model_id=evaluator_model_id),
+            Metric(name="test_metric_2", value="blahblah", model_id=evaluator_model_id),
         ]
         all_metrics.append(metrics)
 
@@ -88,7 +88,9 @@ def test_train_metrics(mocker, n_evaluators):
                 if provider != scorers_provider:
                     raise ValueError
                 return metrics.copy()
+
             return _train_metrics
+
         evaluator.train_metrics = mocker.MagicMock(side_effect=_wrapper(metrics=metrics))
         evaluators.append(evaluator)
 
@@ -118,20 +120,20 @@ def test_train_metrics(mocker, n_evaluators):
 def test_test_metrics(mocker, n_evaluators):
     scorers_provider = mocker.Mock()
 
-    main_model_id = 'main_model_id'
+    main_model_id = "main_model_id"
     all_metrics = []
     evaluators = []
     for idx in range(n_evaluators):
         evaluator = mocker.Mock()
         if n_evaluators > 1:
-            evaluator_model_id = 'model_' + str(idx)
+            evaluator_model_id = "model_" + str(idx)
         else:
             evaluator_model_id = main_model_id
 
         evaluator.model_id = evaluator_model_id
         metrics = [
-            Metric(name='test_metric_1', value=random.randint(0, 1000), model_id=evaluator_model_id),
-            Metric(name='test_metric_2', value='blahblah', model_id=evaluator_model_id)
+            Metric(name="test_metric_1", value=random.randint(0, 1000), model_id=evaluator_model_id),
+            Metric(name="test_metric_2", value="blahblah", model_id=evaluator_model_id),
         ]
         all_metrics.append(metrics)
 
@@ -172,20 +174,20 @@ def test_test_metrics(mocker, n_evaluators):
 def test_any_metrics(mocker, n_evaluators):
     scorers_provider = mocker.Mock()
 
-    main_model_id = 'main_model_id'
+    main_model_id = "main_model_id"
     all_metrics = []
     evaluators = []
     for idx in range(n_evaluators):
         evaluator = mocker.Mock()
         if n_evaluators > 1:
-            evaluator_model_id = 'model_' + str(idx)
+            evaluator_model_id = "model_" + str(idx)
         else:
             evaluator_model_id = main_model_id
 
         evaluator.model_id = evaluator_model_id
         metrics = [
-            Metric(name='test_metric_1', value=random.randint(0, 1000), model_id=evaluator_model_id),
-            Metric(name='test_metric_2', value='blahblah', model_id=evaluator_model_id)
+            Metric(name="test_metric_1", value=random.randint(0, 1000), model_id=evaluator_model_id),
+            Metric(name="test_metric_2", value="blahblah", model_id=evaluator_model_id),
         ]
         all_metrics.append(metrics)
 

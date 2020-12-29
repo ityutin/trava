@@ -12,7 +12,7 @@ from trava.trava_tracker import Tracker
 class TestScorer(Scorer):
     def _make_scorer(self, score_func: Callable, **metrics_kwargs) -> Callable:
         def scorer(model, model_info: ModelInfo, for_train: bool, X, X_raw, y):
-            metric_value = score_func(X['f1'].values)
+            metric_value = score_func(X["f1"].values)
             return metric_value
 
         return scorer
@@ -45,7 +45,7 @@ class TestResultsHandler(ResultsHandler):
 
 
 class TestModel:
-    def __init__(self, required_param_1, required_param_2, def_1=1, def_2='tada', def_3=None, def_4=[], def_5=False):
+    def __init__(self, required_param_1, required_param_2, def_1=1, def_2="tada", def_3=None, def_4=[], def_5=False):
         self._required_param_1 = required_param_1
         self._required_param_2 = required_param_2
         self._def_1 = def_1

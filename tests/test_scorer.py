@@ -15,9 +15,9 @@ def score_func(mocker, score_func_name):
     return result
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope="class")
 def score_func_name():
-    return 'test_score_func'
+    return "test_score_func"
 
 
 def test_is_any_scorer(mocker, score_func):
@@ -42,19 +42,11 @@ def test_require_raw_model(mocker, score_func):
     y = mocker.MagicMock()
 
     with pytest.raises(Exception):
-        scorer(trava_model=trava_model,
-               for_train=True,
-               X=X,
-               X_raw=X_raw,
-               y=y)
+        scorer(trava_model=trava_model, for_train=True, X=X, X_raw=X_raw, y=y)
 
     trava_model.raw_model.return_value = mocker.MagicMock()
 
-    scorer(trava_model=trava_model,
-           for_train=True,
-           X=X,
-           X_raw=X_raw,
-           y=y)
+    scorer(trava_model=trava_model, for_train=True, X=X, X_raw=X_raw, y=y)
 
 
 def test_require_X_y(mocker, score_func):
@@ -67,49 +59,33 @@ def test_require_X_y(mocker, score_func):
     y = mocker.MagicMock()
 
     with pytest.raises(Exception):
-        scorer(trava_model=trava_model,
-               for_train=True,
-               X=X,
-               X_raw=X_raw,
-               y=y)
+        scorer(trava_model=trava_model, for_train=True, X=X, X_raw=X_raw, y=y)
 
     X = mocker.MagicMock()
     X_raw = None
     y = mocker.MagicMock()
 
     with pytest.raises(Exception):
-        scorer(trava_model=trava_model,
-               for_train=True,
-               X=X,
-               X_raw=X_raw,
-               y=y)
+        scorer(trava_model=trava_model, for_train=True, X=X, X_raw=X_raw, y=y)
 
     X = mocker.MagicMock()
     X_raw = mocker.MagicMock()
     y = None
 
     with pytest.raises(Exception):
-        scorer(trava_model=trava_model,
-               for_train=True,
-               X=X,
-               X_raw=X_raw,
-               y=y)
+        scorer(trava_model=trava_model, for_train=True, X=X, X_raw=X_raw, y=y)
 
     X = mocker.MagicMock()
     X_raw = mocker.MagicMock()
     y = mocker.MagicMock()
-    scorer(trava_model=trava_model,
-           for_train=True,
-           X=X,
-           X_raw=X_raw,
-           y=y)
+    scorer(trava_model=trava_model, for_train=True, X=X, X_raw=X_raw, y=y)
 
 
 @pytest.mark.parametrize("for_train", [True, False])
 def test_scorer_func_input(mocker, score_func, for_train):
-    kwargs = {'a': 3, 'b': '3fff'}
+    kwargs = {"a": 3, "b": "3fff"}
     scorer = TestScorer(score_func=score_func, **kwargs)
-    internal_scorer = mocker.patch.object(scorer, '_scorer')
+    internal_scorer = mocker.patch.object(scorer, "_scorer")
 
     trava_model = mocker.Mock()
     trava_model.raw_model.return_value = mocker.MagicMock()
@@ -120,26 +96,24 @@ def test_scorer_func_input(mocker, score_func, for_train):
     X_raw = mocker.MagicMock()
     y = mocker.MagicMock()
 
-    scorer(trava_model=trava_model,
-           for_train=for_train,
-           X=X,
-           X_raw=X_raw,
-           y=y,
-           **kwargs)
+    scorer(trava_model=trava_model, for_train=for_train, X=X, X_raw=X_raw, y=y, **kwargs)
 
-    internal_scorer.assert_called_once_with(model=raw_model,
-                                            model_info=trava_model,
-                                            for_train=for_train,
-                                            X=X,
-                                            X_raw=X_raw,
-                                            y=y,
-                                            **kwargs)
+    internal_scorer.assert_called_once_with(
+        model=raw_model, model_info=trava_model, for_train=for_train, X=X, X_raw=X_raw, y=y, **kwargs
+    )
 
 
 def test_make_scorer(mocker, score_func):
     class LocalTestScorer(Scorer):
-        def __init__(self, score_func: callable, needs_proba=False, requires_raw_model=False,
-                     requires_X_y=False, name: Optional[str] = None, **metrics_kwargs):
+        def __init__(
+            self,
+            score_func: callable,
+            needs_proba=False,
+            requires_raw_model=False,
+            requires_X_y=False,
+            name: Optional[str] = None,
+            **metrics_kwargs
+        ):
             self._make_scorer_score_func = None
             self._make_scorer_metrics_kwargs: Dict[str, Any] = {}
             super().__init__(score_func, needs_proba, requires_raw_model, requires_X_y, name, **metrics_kwargs)
@@ -153,7 +127,7 @@ def test_make_scorer(mocker, score_func):
 
             return scorer
 
-    kwargs = {'a': 3, 'b': '3fff'}
+    kwargs = {"a": 3, "b": "3fff"}
     scorer = LocalTestScorer(score_func=score_func, **kwargs)
 
     assert scorer._make_scorer_score_func == score_func

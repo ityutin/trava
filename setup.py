@@ -23,9 +23,9 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
     ],
-    packages=find_packages(exclude=("*.tests", "*.tests.*", "tests.*",
-                                    "tests", "*.examples", "*.examples.*",
-                                    "examples.*", "examples")),
+    packages=find_packages(
+        exclude=("*.tests", "*.tests.*", "tests.*", "tests", "*.examples", "*.examples.*", "examples.*", "examples")
+    ),
     include_package_data=True,
     install_requires=["pandas", "numpy"],
 )
