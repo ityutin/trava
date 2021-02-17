@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="trava",
-    version="0.2.5",
+    version="0.2.6",
     description="Framework that helps to train models, compare them and track parameters&metrics along the way.",
     long_description=README,
     long_description_content_type="text/markdown",

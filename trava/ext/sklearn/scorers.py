@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.metrics import make_scorer
 from typing import Callable
 
@@ -17,11 +18,13 @@ class SklearnScorer(Scorer):
         needs_proba=False,
         needs_threshold=False,
         sample_weight_required=False,
+        threshold=None,
         **metrics_kwargs
     ):
         self._greater_is_better = greater_is_better
         self._needs_threshold = needs_threshold
         self._sample_weight_required = sample_weight_required
+        self._threshold = threshold
 
         super().__init__(
             score_func=score_func,
@@ -45,10 +48,16 @@ class SklearnScorer(Scorer):
 
                 y_cached = model_info.y(for_train=for_train)
 
-                if self._needs_proba:
+                if self._needs_proba or self._threshold:
                     y_pred_values = model_info.y_pred_proba(for_train=for_train)
+
                     if len(set(y_cached)) == 2:
                         y_pred_values = y_pred_values[:, 1]
+
+                        if self._threshold:
+                            y_pred_values = np.where(y_pred_values > self._threshold, 1, 0)
+                    elif self._threshold:
+                        raise Exception("Only binary classification is supported for custom thresholds")
                 else:
                     y_pred_values = model_info.y_pred(for_train=for_train)
 
