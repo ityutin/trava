@@ -91,8 +91,9 @@ class TravaTracker(Tracker, ResultsHandler):
         self._track_predict_params(model_id=model_id, params=params)
 
     @track_if_enabled
-    def track_metric(self, model_id: str, metric: Metric, step=None):
-        self.track_metric_value(model_id=model_id, name=metric.name, value=metric.value, step=step)
+    def track_metric(self, model_id: str, metric: Metric, train: bool, step=None):
+        name = f"train_{metric.name}" if train else metric.name
+        self.track_metric_value(model_id=model_id, name=name, value=metric.value, step=step)
 
     @track_if_enabled
     def track_metric_value(self, model_id: str, name: str, value, step=None):
@@ -153,13 +154,20 @@ class TravaTracker(Tracker, ResultsHandler):
             self.track_model_results(model_results=model_results)
 
     def track_model_results(self, model_results: ModelResult):
-        self._track_metrics(model_id=model_results.model_id, metrics=model_results.test_metrics(provider=self))
-        self._track_metrics(model_id=model_results.model_id, metrics=model_results.other_metrics(provider=self))
+        self._track_metrics(
+            model_id=model_results.model_id, metrics=model_results.train_metrics(provider=self), train=True
+        )
+        self._track_metrics(
+            model_id=model_results.model_id, metrics=model_results.test_metrics(provider=self), train=False
+        )
+        self._track_metrics(
+            model_id=model_results.model_id, metrics=model_results.other_metrics(provider=self), train=False
+        )
 
-    def _track_metrics(self, model_id: str, metrics: List[Metric]):
+    def _track_metrics(self, model_id: str, metrics: List[Metric], train: bool):
         for metric in metrics:
             if metric.is_scalar:
-                self.track_metric(model_id=model_id, metric=metric)
+                self.track_metric(model_id=model_id, metric=metric, train=train)
 
     # TO OVERRIDE
 

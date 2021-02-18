@@ -34,7 +34,7 @@ class Tracker:
     def track_model_results(self, model_results: ModelResult):
         pass
 
-    def track_metric(self, model_id: str, metric: Metric, step=None):
+    def track_metric(self, model_id: str, metric: Metric, train: bool, step=None):
         pass
 
     def track_metric_value(self, model_id: str, name: str, value, step=None):
