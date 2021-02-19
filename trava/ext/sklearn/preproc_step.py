@@ -21,7 +21,7 @@ class PreprocConfigStep(FitPredictConfigUpdateStep):
         self._preprocessing = preprocessing
 
     def fit_split_data(self, raw_split_data: SplitResult, config: FitPredictConfig, tracker: Tracker) -> SplitResult:
-        X_train = self._preprocessing.fit_transform(X=raw_split_data.X_train)
+        X_train = self._preprocessing.fit_transform(X=raw_split_data.X_train, y=raw_split_data.y_train)
         X_test = self._preprocessing.transform(X=raw_split_data.X_test)
 
         X_valid = raw_split_data.X_valid
