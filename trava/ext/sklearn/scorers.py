@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.metrics import make_scorer
 from typing import Callable
 
@@ -85,6 +86,21 @@ class SklearnScorer(Scorer):
 
 def sk(score_func: Callable, **kwargs) -> Scorer:
     return _sk(score_func=score_func, needs_proba=False, **kwargs)
+
+
+def sk_binary_with_threshold(scoring_func, custom_threshold: float, **sk_kwargs) -> Scorer:
+    if not custom_threshold:
+        # just a temp solution
+        return sk(scoring_func, **sk_kwargs)
+
+    def _result(y_true, y_pred, *args, **kwargs):
+        y_pred = np.where(y_pred > custom_threshold, 1, 0)
+
+        return scoring_func(y_true, y_pred, *args, **kwargs)
+
+    _result.__name__ = scoring_func.__name__
+
+    return sk_proba(_result, **sk_kwargs)
 
 
 def sk_proba(score_func: Callable, **kwargs) -> Scorer:

@@ -37,6 +37,15 @@ class _TravaBase(ABC):
 
         self._results: Dict[str, ModelResult] = {}
 
+    def set_tracker(self, tracker: TravaTracker):
+        self._tracker = tracker
+
+    def enable_tracking(self):
+        self._tracker.enable()
+
+    def disable_tracking(self):
+        self._tracker.disable()
+
     @property
     def results(self) -> list:
         """

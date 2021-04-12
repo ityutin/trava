@@ -660,3 +660,25 @@ def test_only_calculate_metrics(mocker, model_id, main_model_id, model_type, tra
     )
 
     results_handler.handle.assert_not_called()
+
+
+def test_set_tracker(mocker, trava):
+    trava_tracker = mocker.Mock()
+
+    trava.set_tracker(tracker=trava_tracker)
+    trava.disable_tracking()
+    trava_tracker.assert_has_calls([mocker.call.disable()])
+
+
+def test_enable_tracking(mocker):
+    trava_tracker = mocker.Mock()
+    trava = TravaSV(tracker=trava_tracker)
+    trava.enable_tracking()
+    trava_tracker.assert_has_calls([mocker.call.enable()])
+
+
+def test_disable_tracking(mocker):
+    trava_tracker = mocker.Mock()
+    trava = TravaSV(tracker=trava_tracker)
+    trava.disable_tracking()
+    trava_tracker.assert_has_calls([mocker.call.disable()])
